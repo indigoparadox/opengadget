@@ -25,7 +25,6 @@
 
 #include "arckogako.h"
 
-
 //[Export(typeof(ArchiveFormat))]
 //public class PakOpener : ArchiveFormat
 //{
@@ -37,7 +36,8 @@ public PakOpener ()
 }
 */
 
-struct pak_file* try_open( FILE* file ) {
+// public override ArcFile TryOpen( ArcView file )
+struct pak_file* pakopener_try_open( FILE* file ) {
    char file_header[7] = { '\0' };
    uint16_t version;
    int entry_size;
@@ -86,7 +86,7 @@ struct pak_file* try_open( FILE* file ) {
    }
 
    //int entry_count = file.View.ReadInt32 (12);
-   fread( entry_count, sizeof( int32_t ), 1, file );
+   fread( &entry_count, sizeof( int32_t ), 1, file );
 
    if( entry_count <= 0 || entry_count > 0xfffff ) {
       //return null;
@@ -171,50 +171,117 @@ cleanup:
    return entries_out;
 }
 
-public override Stream OpenEntry (ArcFile arc, Entry entry)
-{
-   var input = arc.File.CreateStream (entry.Offset, entry.Size);
+// public override Stream OpenEntry( ArcFile arc, Entry entry )
+uint8_t* pakopener_open_entry( struct pak_file* arc, FILE* arc_file_in, struct pak_entry* entry ) {
+   //var input = arc.File.CreateStream (entry.Offset, entry.Size);
+
+   uint8_t* unpacked = NULL;
+   uint8_t* packed = NULL;
+   int failure = 0;
+   int dest_size;
+
+   packed = calloc( sizeof( uint8_t ) * entry->unpacked_size );
+   if( NULL == packed ) {
+      failure = 1;
+      goto cleanup;
+   }
+   fseek( arc_file_in, entry->offset, 0 );
+   fread( packed, sizeof( uint8_t ), entry->size, arc_file_in );
+
+   /*
    var packed_entry = entry as KogadoEntry;
    if (null == packed_entry || !packed_entry.IsPacked)
       return input;
-   if (packed_entry.CompressionType > 3)
-   {
-      Trace.WriteLine (string.Format ("{1}: Unknown compression type {0}",
-                                       packed_entry.CompressionType, packed_entry.Name),
-                        "Kogado.PakOpener.OpenEntry");
-      return input;
+   */
+
+   // if (packed_entry.CompressionType > 3)
+   if( 3 < entry->compression_type ) {
+#ifdef DEBUGX
+      Trace.WriteLine( string.Format( "{1}: Unknown compression type {0}",
+         packed_entry.CompressionType, packed_entry.Name ),
+         "Kogado.PakOpener.OpenEntry" );
+#endif /* DEBUGX */
+
+      //return input;
+      failure = 1;
+      goto cleanup;
    }
-   if (3 == packed_entry.CompressionType)
-      return new CryptoStream (input, new NotTransform(), CryptoStreamMode.Read);
-   try
-   {
-      if (2 == packed_entry.CompressionType)
-      {
-         var decoded = new MemoryStream ((int)packed_entry.UnpackedSize);
-         try
-         {
-               var cocotte = new CocotteEncoder();
-               if (!cocotte.Decode (input, decoded))
-                  throw new InvalidFormatException ("Invalid Cocotte-encoded stream");
-               decoded.Position = 0;
-               return decoded;
-         }
-         catch
-         {
-               decoded.Dispose();
-               throw;
-         }
+
+   // if( 3 == packed_entry.CompressionType ) {
+   if( 3 == entry->compression_type ) {
+      //return new CryptoStream (input, new NotTransform(), CryptoStreamMode.Read);
+      /* XXX: NOT IMPLEMENTED */
+      goto cleanup;
+   }
+
+   //try   {
+   // if(2 == packed_entry.CompressionType)
+   if( 2 == entry->compression_type ) {
+#ifdef COCOTTEX
+      //var decoded = new MemoryStream ((int)packed_entry.UnpackedSize);
+      out_buffer = calloc( sizeof( uint8_t ) * entry->unpacked_size );
+      if( NULL == out_buffer ) {
+         failure = 1;
+         goto cleanup;
       }
-      // if (1 == packed_entry.CompressionType)
-      var unpacked = new byte[packed_entry.UnpackedSize];
-      var mariel = new MarielEncoder();
-      mariel.Unpack (input, unpacked, unpacked.Length);
-      return new MemoryStream (unpacked);
+
+      //try
+      //{
+
+      var cocotte = new CocotteEncoder();
+      if( !cocotte.Decode( input, decoded ) )
+         throw new InvalidFormatException( "Invalid Cocotte-encoded stream" );
+      decoded.Position = 0;
+      return decoded;
+      /* }
+      catch
+      {
+            decoded.Dispose();
+            throw;
+      } */
+#endif /* COCOTTEX */
+
+      goto cleanup;
    }
-   finally
-   {
-      input.Dispose();
+
+   if( 1 == entry->compression_type ) {
+#ifdef MARIELX
+      //var unpacked = new byte[packed_entry.UnpackedSize];
+      unpacked = calloc( sizeof( uint8_t ) * entry->unpacked_size );
+      if( NULL == unpacked ) {
+         failure = 1;
+         goto cleanup;
+      }
+
+      //var mariel = new MarielEncoder();
+      //mariel.Unpack (input, unpacked, unpacked.Length);
+      unpacked = mariel_unpack( packed, entry->unpacked_size );
+      //return new MemoryStream (unpacked);
+   /*
+      }
+      finally
+      {
+         input.Dispose();
+      */
+#endif /* MARIELX */
    }
+
+   if( 0 == entry->compression_type ) {
+      unpacked = packed;
+      packed = NULL;
+   }
+
+cleanup:
+
+   if( NULL != packed ) {
+      free( packed );
+   }
+
+   if( failure && NULL != unpacked ) {
+      free( unpacked );
+   }
+
+   return unpacked;
 }
 
 #ifdef ARCKOGADO_CREATE
@@ -390,62 +457,98 @@ private static readonly ushort[] Crc16Table = {
 
 #endif /* ARCKOGADO_CREATE */
 
+#ifdef MARIELX
 //internal class MarielEncoder
 //{
-public void Unpack (Stream input, byte[] dest, int dest_size)
-{
+//public void Unpack (Stream input, byte[] dest, int dest_size)
+uint8_t* mariel_unpack( uint8_t* input, int dest_size ) {
    int out_pos = 0;
-   using (var reader = new BinaryReader (input, Encoding.ASCII, true))
-   {
-      uint bits = 0;
-      while (dest_size > 0)
-      {
-         bool carry = 0 != (bits & 0x80000000);
-         bits <<= 1;
-         if (0 == bits)
-         {
-               bits = reader.ReadUInt32();
-               carry = 0 != (bits & 0x80000000);
-               bits = (bits << 1) | 1u;
-         }
-         int b = input.ReadByte();
-         if (-1 == b)
-               break;
-         if (!carry)
-         {
-               dest[out_pos++] = (byte)b;
-               dest_size--;
-               continue;
-         }
-         int offset = (b & 0x0f) + 1;
-         int count = ((b >> 4) & 0x0f) + 1;
-         if (0x0f == count)
-         {
-               b = input.ReadByte();
-               if (-1 == b)
-                  break;
-               count = (byte)b;
-         }
-         else if (count > 0x0f)
-         {
-               count = reader.ReadUInt16();
-         }
-         if (offset >= 0x0b)
-         {
-               offset -= 0x0b;
-               offset <<= 8;
-               offset |= reader.ReadByte();
-         }
-         if (count > dest_size)
-               count = dest_size;
-         int src = out_pos - offset;
-         if (src < 0 || src >= out_pos)
-               break;
-         Binary.CopyOverlapped (dest, src, out_pos, count);
-         out_pos += count;
-         dest_size -= count;
-      }
+   int i = 0;
+   uint8_t b = 0;
+   //using (var reader = new BinaryReader (input, Encoding.ASCII, true))
+   //{
+   uint32_t bits = 0;
+   uint8_t* dest = NULL;
+   int failure = 0;
+   int offset = 0;
+   int count = 0;
+
+   dest = calloc( sizeof( uint8_t ), dest_size );
+   if( NULL == dest ) {
+      failure = 1;
+      goto cleanup;
    }
+
+   while (dest_size > 0)   {
+      uint8_t carry = 0 != (bits & 0x80000000);
+      bits <<= 1;
+      if( 0 == bits ) {
+         //bits = reader.ReadUInt32();
+         memcpy( &bits, &input[i], sizeof( uint32_t ) );
+         i += sizeof( uint32_t );
+         carry = 0 != (bits & 0x80000000);
+         bits = (bits << 1) | 1u;
+      }
+
+      //int b = input.ReadByte();
+      memcpy( &b, &input[i], sizeof( uint8_t ) );
+      i += sizeof( uint8_t );
+      if( -1 == b ) {
+         break;
+      }
+
+      if (!carry)      {
+            dest[out_pos++] = b;
+            dest_size--;
+            continue;
+      }
+
+      offset = (b & 0x0f) + 1;
+      count = ((b >> 4) & 0x0f) + 1;
+      if( 0x0f == count ) {
+         //b = input.ReadByte();
+         memcpy( &b, &input[i], sizeof( uint8_t ) );
+         i += sizeof( uint8_t );
+         if( -1 == b ) {
+            break;
+         }
+         count = b;
+      }
+
+      else if( count > 0x0f ) {
+         count = reader.ReadUInt16();
+      }
+
+      if( offset >= 0x0b ) {
+         offset -= 0x0b;
+         offset <<= 8;
+         offset |= reader.ReadByte();
+      }
+
+      if( count > dest_size ) {
+         count = dest_size;
+      }
+
+      int src = out_pos - offset;
+      if( src < 0 || src >= out_pos ) {
+         break;
+      }
+
+      Binary.CopyOverlapped (dest, src, out_pos, count);
+      out_pos += count;
+      dest_size -= count;
+   }
+   //}
+
+cleanup:
+
+   if( failure && NULL != dest ) {
+      free( dest );
+   }
+
+   return dest;
 }
 //}
 //}
+
+#endif /* MARIELX */

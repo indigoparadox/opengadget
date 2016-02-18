@@ -67,7 +67,7 @@ public sealed class Crc16 : ICheckSum
 }
 */
 
-
-struct pak_file* try_open( FILE* );
+struct pak_file* pakopener_try_open( FILE* file );
+uint8_t* pakopener_open_entry( struct pak_file* arc, FILE* arc_file_in, struct pak_entry* entry );
 
 #endif /* ARCKOGAKO_H */
