@@ -17,22 +17,35 @@ using GameRes.Utility;
 */
 
 #include <stdio.h>
-
-//namespace GameRes.Formats.Kogado
-//{
-//    public class KogadoEntry : PackedEntry
-//    {
-// 0 : Not compressed
-// 1 : Mariel compression
-// 2 : Cocotte compression
-// 3 : Xor 0xff encryption
-/*
-public byte     CompressionType;
-public bool     HasCheckSum;
-public ushort   CheckSum;
-public long     FileTime;
-*/
-//}
+#include <string.h>
+#include <stdint.h>
+struct pak_entry {
+   //namespace GameRes.Formats.Kogado
+   //{
+   //    public class KogadoEntry : PackedEntry
+   //    {
+   // 0 : Not compressed
+   // 1 : Mariel compression
+   // 2 : Cocotte compression
+   // 3 : Xor 0xff encryption
+   /*
+   public byte     CompressionType;
+   public bool     HasCheckSum;
+   public ushort   CheckSum;
+   public long     FileTime;
+   */
+   //}
+   char name[0x15];
+   char ext[3];
+   int64_t offset;
+   uint32_t unpacked_size;
+   uint32_t size;
+   uint8_t compression_type;
+   uint8_t is_packed;
+   uint8_t has_checksum;
+   uint16_t checksum;
+   int64_t file_time;
+};
 
 //[Export(typeof(ArchiveFormat))]
 //public class PakOpener : ArchiveFormat
@@ -55,6 +68,6 @@ public sealed class Crc16 : ICheckSum
 */
 
 
-void try_open( FILE*, struct pak_file* );
+struct pak_file* try_open( FILE* );
 
 #endif /* ARCKOGAKO_H */

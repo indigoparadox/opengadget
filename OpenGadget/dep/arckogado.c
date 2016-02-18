@@ -37,62 +37,138 @@ public PakOpener ()
 }
 */
 
-void try_open( FILE* file, struct pak_file* arc_out ) {
-   if (!file.View.AsciiEqual (0, "HyPack"))
-      return null;
-   int version = file.View.ReadUInt16 (6);
+struct pak_file* try_open( FILE* file ) {
+   char file_header[7] = { '\0' };
+   uint16_t version;
    int entry_size;
-   switch (version)
-   {
-   case 0x100: entry_size = 32; break;
-   case 0x200: entry_size = 40; break;
-   case 0x300:
-   case 0x301: entry_size = 48; break;
-   default: return null;
-   }
-   long index_offset = 0x10 + file.View.ReadUInt32 (8);
-   if (index_offset >= file.MaxOffset)
-      return null;
-   int entry_count = file.View.ReadInt32 (12);
-   if (entry_count <= 0 || entry_count > 0xfffff)
-      return null;
-   uint index_size = (uint)(entry_count * entry_size);
-   if (index_size > file.View.Reserve (index_offset, index_size))
-      return null;
-   long data_offset = 0x10;
+   int64_t index_offset;
+   int64_t index_offset_max;
+   int32_t entry_count;
+   unsigned int index_size;
+   int64_t data_offset = 0x10;
+   struct pak_entry* entries_out = NULL;
+   int failure = 0;
+   int i;
 
-   var dir = new List<Entry> (entry_count);
-   for (int i = 0; i < entry_count; ++i)
-   {
-      string name = file.View.ReadString (index_offset, 0x15);
-      string ext  = file.View.ReadString (index_offset+0x15, 3);
-      if (0 == name.Length)
-         name = i.ToString ("D5");
-      if (0 != ext.Length)
-         name += '.'+ext;
-      var entry = FormatCatalog.Instance.Create<KogadoEntry> (name);
-      entry.Offset        = data_offset + file.View.ReadUInt32 (index_offset + 0x18);
-      if (version >= 0x200)
-      {
-         entry.UnpackedSize  = file.View.ReadUInt32 (index_offset + 0x1c);
-         entry.Size          = file.View.ReadUInt32 (index_offset + 0x20);
-         entry.CompressionType = file.View.ReadByte (index_offset + 0x24);
-         entry.IsPacked      = 0 != entry.CompressionType;
-         if (version >= 0x300)
-         {
-               entry.HasCheckSum = 0 != file.View.ReadByte (index_offset + 0x25);
-               entry.CheckSum  = file.View.ReadUInt16 (index_offset + 0x26);
-               entry.FileTime  = file.View.ReadInt64 (index_offset + 0x28);
-         }
+   /* Get the filesize and make sure we start at the beginning. */
+   fseek( file, 0, SEEK_END );
+   index_offset_max = ftell( file );
+   fseek( file, 0, SEEK_SET );
+
+   //if (!file.View.AsciiEqual (0, "HyPack"))
+   //   return null;
+   fread( file_header, 1, 6, file );
+   if( 0 != strncmp( "HyPack", file_header, 6 ) ) {
+      failure = 1;
+      goto cleanup;
+   }
+
+   //int version = file.View.ReadUInt16 (6);
+   //int entry_size;
+   fread( &version, sizeof( uint16_t ), 1, file );
+
+   switch( version ) {
+      case 0x100: entry_size = 32; break;
+      case 0x200: entry_size = 40; break;
+      case 0x300:
+      case 0x301: entry_size = 48; break;
+      default: failure = 1; goto cleanup;
+   }
+
+   //long index_offset = 0x10 + file.View.ReadUInt32 (8);
+   fread( &index_offset, sizeof( uint32_t ), 1, file );
+
+   //if (index_offset >= file.MaxOffset)
+   //   return null;
+   if( index_offset >= index_offset_max ) {
+      failure = 1;
+      goto cleanup;
+   }
+
+   //int entry_count = file.View.ReadInt32 (12);
+   fread( entry_count, sizeof( int32_t ), 1, file );
+
+   if( entry_count <= 0 || entry_count > 0xfffff ) {
+      //return null;
+      failure = 1;
+      goto cleanup;
+   }
+
+   index_size = entry_count * entry_size;
+   //if (index_size > file.View.Reserve (index_offset, index_size))
+   //   return null;
+   
+   //var dir = new List<Entry> (entry_count);
+   entries_out = calloc( sizeof( struct pak_entry ) * entry_count );
+   if( NULL == entries_out ) {
+      failure = 1;
+      goto cleanup;
+   }
+
+   for( i = 0 ; i < entry_count ; ++i )   {
+      //string name = file.View.ReadString (index_offset, 0x15);
+      //string ext  = file.View.ReadString (index_offset+0x15, 3);
+      memset( entries_out[i].name, '\0', 0x15 );
+      fread( entries_out[i].name, sizeof( char ), 0x15, file );
+      memset( entries_out[i].ext, '\0', 3 );
+      fread( entries_out[i].ext, sizeof( char ), 3, file );
+
+      if( 0 == strlen( entries_out[i].name ) ) {
+         //name = i.ToString( "D5" );
+         snprintf( entries_out[i].name, 0x15, "d5", i );
       }
-      else
-         entry.Size          = file.View.ReadUInt32 (index_offset + 0x1c);
-      if (!entry.CheckPlacement (file.MaxOffset))
-         return null;
-      dir.Add (entry);
+
+      //if (0 != ext.Length)
+      //   name += '.'+ext;
+
+      //var entry = FormatCatalog.Instance.Create<KogadoEntry> (name);
+      //entry.Offset        = data_offset + file.View.ReadUInt32 (index_offset + 0x18);
+      fread( &(entries_out[i].offset), sizeof( uint32_t ), 1, file );
+      entries_out[i].offset += data_offset;
+      if( version >= 0x200 ) {
+         //entry.UnpackedSize = file.View.ReadUInt32( index_offset + 0x1c );
+         fread( &(entries_out[i].unpacked_size), sizeof( uint32_t ), 1, file );
+         //entry.Size = file.View.ReadUInt32( index_offset + 0x20 );
+         fread( &(entries_out[i].size), sizeof( uint32_t ), 1, file );
+         //entry.CompressionType = file.View.ReadByte( index_offset + 0x24 );
+         fread( &(entries_out[i].compression_type), sizeof( uint8_t ), 1, file );
+         entries_out[i].is_packed = 0 != entries_out[i].compression_type;
+         if( version >= 0x300 ) {
+            //entry.HasCheckSum = 0 != file.View.ReadByte( index_offset + 0x25 );
+            fread( entries_out[i].has_checksum, sizeof( uint8_t ), 1, file );
+            //entry.CheckSum = file.View.ReadUInt16( index_offset + 0x26 );
+            fread( entries_out[i].checksum, sizeof( uint16_t ), 1, file );
+            //entry.FileTime = file.View.ReadInt64( index_offset + 0x28 );
+            fread( entries_out[i].file_time, sizeof( int64_t ), 1, file );
+         }
+      } else {
+         //entry.Size = file.View.ReadUInt32( index_offset + 0x1c );
+         fread( entries_out[i].size, sizeof( uint32_t ), 1, file );
+      }
+
+      //if (!entry.CheckPlacement (file.MaxOffset))
+      //   return null;
+      if( 
+         entries_out[i].offset >= index_offset_max || 
+         entries_out[i].size > index_offset_max ||
+         entries_out[i].offset > index_offset_max - entries_out[i].size
+      ) {
+         failure = 1;
+         goto cleanup;
+      }
+
+      //dir.Add (entry);
       index_offset += entry_size;
    }
-   return new ArcFile (file, this, dir);
+
+cleanup:
+
+   if( failure && NULL != entries_out ) {
+      free( entries_out );
+   }
+
+   //return new ArcFile (file, this, dir);
+   return entries_out;
 }
 
 public override Stream OpenEntry (ArcFile arc, Entry entry)
@@ -140,6 +216,8 @@ public override Stream OpenEntry (ArcFile arc, Entry entry)
       input.Dispose();
    }
 }
+
+#ifdef ARCKOGADO_CREATE
 
 internal class OutputEntry : KogadoEntry
 {
@@ -309,6 +387,8 @@ private static readonly ushort[] Crc16Table = {
    0x7bc7, 0x6a4e, 0x58d5, 0x495c, 0x3de3, 0x2c6a, 0x1ef1, 0x0f78,
 };
 //}
+
+#endif /* ARCKOGADO_CREATE */
 
 //internal class MarielEncoder
 //{
