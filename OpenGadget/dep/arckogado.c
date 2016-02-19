@@ -186,13 +186,14 @@ uint8_t* pakopener_open_entry( struct pak_file* pak, FILE* file, struct pak_entr
    uint8_t* packed = NULL;
    int failure = 0;
    int dest_size;
+   int i;
 
-   packed = calloc( entry->unpacked_size, sizeof( char ) );
+   packed = calloc( entry->size, sizeof( char ) );
    if( NULL == packed ) {
       failure = 1;
       goto cleanup;
    }
-   fseek( file, entry->offset, 0 );
+   fseek( file, entry->offset, SEEK_SET );
    fread( packed, sizeof( uint8_t ), entry->size, file );
 
    /*
@@ -217,7 +218,13 @@ uint8_t* pakopener_open_entry( struct pak_file* pak, FILE* file, struct pak_entr
    // if( 3 == packed_entry.CompressionType ) {
    if( 3 == entry->compression_type ) {
       //return new CryptoStream (input, new NotTransform(), CryptoStreamMode.Read);
-      /* XXX: NOT IMPLEMENTED */
+      for( i = 0 ; i < entry->size ; i++ ) {
+         packed[i] = ~packed[i];
+      }
+
+      unpacked = packed;
+      packed = NULL;
+
       goto cleanup;
    }
 
