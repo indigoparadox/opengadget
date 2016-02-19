@@ -41,14 +41,16 @@ struct pak_file* pakopener_try_open( FILE* file ) {
    char file_header[7] = { '\0' };
    uint16_t version;
    int entry_size;
+   uint32_t index_offset_raw;
    int64_t index_offset;
    int64_t index_offset_max;
-   int32_t entry_count;
    unsigned int index_size;
    int64_t data_offset = 0x10;
-   struct pak_entry* entries_out = NULL;
+   struct pak_file* file_out = NULL;
    int failure = 0;
    int i;
+   int32_t count_raw;
+   uint64_t file_out_len;
 
    /* Get the filesize and make sure we start at the beginning. */
    fseek( file, 0, SEEK_END );
@@ -76,7 +78,8 @@ struct pak_file* pakopener_try_open( FILE* file ) {
    }
 
    //long index_offset = 0x10 + file.View.ReadUInt32 (8);
-   fread( &index_offset, sizeof( uint32_t ), 1, file );
+   fread( &index_offset_raw, sizeof( uint32_t ), 1, file );
+   index_offset = 0x10 + index_offset_raw;
 
    //if (index_offset >= file.MaxOffset)
    //   return null;
@@ -86,36 +89,39 @@ struct pak_file* pakopener_try_open( FILE* file ) {
    }
 
    //int entry_count = file.View.ReadInt32 (12);
-   fread( &entry_count, sizeof( int32_t ), 1, file );
+   fread( &count_raw, sizeof( int32_t ), 1, file );
 
-   if( entry_count <= 0 || entry_count > 0xfffff ) {
+   if( count_raw <= 0 || count_raw > 0xfffff ) {
       //return null;
       failure = 1;
       goto cleanup;
    }
 
-   index_size = entry_count * entry_size;
+   index_size = count_raw * entry_size;
    //if (index_size > file.View.Reserve (index_offset, index_size))
    //   return null;
    
    //var dir = new List<Entry> (entry_count);
-   entries_out = calloc( sizeof( struct pak_entry ) * entry_count );
-   if( NULL == entries_out ) {
+   file_out_len = sizeof( struct pak_file ) + (sizeof( struct pak_entry ) * count_raw);
+   file_out = (struct pak_file*)calloc( file_out_len, sizeof( char ) );
+   if( NULL == file_out ) {
       failure = 1;
       goto cleanup;
    }
+   file_out->count = count_raw;
 
-   for( i = 0 ; i < entry_count ; ++i )   {
+   // Move to the offset and begin reading.
+   fseek( file, index_offset, SEEK_SET );
+
+   for( i = 0 ; i < file_out->count ; ++i )   {
       //string name = file.View.ReadString (index_offset, 0x15);
       //string ext  = file.View.ReadString (index_offset+0x15, 3);
-      memset( entries_out[i].name, '\0', 0x15 );
-      fread( entries_out[i].name, sizeof( char ), 0x15, file );
-      memset( entries_out[i].ext, '\0', 3 );
-      fread( entries_out[i].ext, sizeof( char ), 3, file );
+      fread( file_out->entries[i].name, sizeof( char ), 0x15, file );
+      fread( file_out->entries[i].ext, sizeof( char ), 3, file );
 
-      if( 0 == strlen( entries_out[i].name ) ) {
+      if( 0 == strlen( file_out->entries[i].name ) ) {
          //name = i.ToString( "D5" );
-         snprintf( entries_out[i].name, 0x15, "d5", i );
+         snprintf( file_out->entries[i].name, 0x15, "%d5", i );
       }
 
       //if (0 != ext.Length)
@@ -123,35 +129,35 @@ struct pak_file* pakopener_try_open( FILE* file ) {
 
       //var entry = FormatCatalog.Instance.Create<KogadoEntry> (name);
       //entry.Offset        = data_offset + file.View.ReadUInt32 (index_offset + 0x18);
-      fread( &(entries_out[i].offset), sizeof( uint32_t ), 1, file );
-      entries_out[i].offset += data_offset;
+      fread( &(file_out->entries[i].offset), sizeof( uint32_t ), 1, file );
+      file_out->entries[i].offset += data_offset;
       if( version >= 0x200 ) {
          //entry.UnpackedSize = file.View.ReadUInt32( index_offset + 0x1c );
-         fread( &(entries_out[i].unpacked_size), sizeof( uint32_t ), 1, file );
+         fread( &(file_out->entries[i].unpacked_size), sizeof( uint32_t ), 1, file );
          //entry.Size = file.View.ReadUInt32( index_offset + 0x20 );
-         fread( &(entries_out[i].size), sizeof( uint32_t ), 1, file );
+         fread( &(file_out->entries[i].size), sizeof( uint32_t ), 1, file );
          //entry.CompressionType = file.View.ReadByte( index_offset + 0x24 );
-         fread( &(entries_out[i].compression_type), sizeof( uint8_t ), 1, file );
-         entries_out[i].is_packed = 0 != entries_out[i].compression_type;
+         fread( &(file_out->entries[i].compression_type), sizeof( uint8_t ), 1, file );
+         file_out->entries[i].is_packed = 0 != file_out->entries[i].compression_type;
          if( version >= 0x300 ) {
             //entry.HasCheckSum = 0 != file.View.ReadByte( index_offset + 0x25 );
-            fread( entries_out[i].has_checksum, sizeof( uint8_t ), 1, file );
+            fread( &(file_out->entries[i].has_checksum), sizeof( uint8_t ), 1, file );
             //entry.CheckSum = file.View.ReadUInt16( index_offset + 0x26 );
-            fread( entries_out[i].checksum, sizeof( uint16_t ), 1, file );
+            fread( &(file_out->entries[i].checksum), sizeof( uint16_t ), 1, file );
             //entry.FileTime = file.View.ReadInt64( index_offset + 0x28 );
-            fread( entries_out[i].file_time, sizeof( int64_t ), 1, file );
+            fread( &(file_out->entries[i].file_time), sizeof( int64_t ), 1, file );
          }
       } else {
          //entry.Size = file.View.ReadUInt32( index_offset + 0x1c );
-         fread( entries_out[i].size, sizeof( uint32_t ), 1, file );
+         fread( &(file_out->entries[i].size), sizeof( uint32_t ), 1, file );
       }
 
       //if (!entry.CheckPlacement (file.MaxOffset))
       //   return null;
       if( 
-         entries_out[i].offset >= index_offset_max || 
-         entries_out[i].size > index_offset_max ||
-         entries_out[i].offset > index_offset_max - entries_out[i].size
+         file_out->entries[i].offset >= index_offset_max ||
+         file_out->entries[i].size > index_offset_max ||
+         file_out->entries[i].offset > index_offset_max - file_out->entries[i].size
       ) {
          failure = 1;
          goto cleanup;
@@ -159,20 +165,21 @@ struct pak_file* pakopener_try_open( FILE* file ) {
 
       //dir.Add (entry);
       index_offset += entry_size;
+      fseek( file, index_offset, SEEK_SET );
    }
 
 cleanup:
 
-   if( failure && NULL != entries_out ) {
-      free( entries_out );
+   if( failure && NULL != file_out ) {
+      free( file_out );
    }
 
    //return new ArcFile (file, this, dir);
-   return entries_out;
+   return file_out;
 }
 
 // public override Stream OpenEntry( ArcFile arc, Entry entry )
-uint8_t* pakopener_open_entry( struct pak_file* arc, FILE* arc_file_in, struct pak_entry* entry ) {
+uint8_t* pakopener_open_entry( struct pak_file* pak, FILE* file, struct pak_entry* entry ) {
    //var input = arc.File.CreateStream (entry.Offset, entry.Size);
 
    uint8_t* unpacked = NULL;
@@ -180,13 +187,13 @@ uint8_t* pakopener_open_entry( struct pak_file* arc, FILE* arc_file_in, struct p
    int failure = 0;
    int dest_size;
 
-   packed = calloc( sizeof( uint8_t ) * entry->unpacked_size );
+   packed = calloc( entry->unpacked_size, sizeof( char ) );
    if( NULL == packed ) {
       failure = 1;
       goto cleanup;
    }
-   fseek( arc_file_in, entry->offset, 0 );
-   fread( packed, sizeof( uint8_t ), entry->size, arc_file_in );
+   fseek( file, entry->offset, 0 );
+   fread( packed, sizeof( uint8_t ), entry->size, file );
 
    /*
    var packed_entry = entry as KogadoEntry;
