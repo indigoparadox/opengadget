@@ -19,6 +19,7 @@ using GameRes.Utility;
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdlib.h>
 struct pak_entry {
    //namespace GameRes.Formats.Kogado
    //{
@@ -50,12 +51,15 @@ struct pak_entry {
 //[Export(typeof(ArchiveFormat))]
 //public class PakOpener : ArchiveFormat
 struct pak_file {
-   int test;
+//   int test;
 //public override string         Tag{ get{ return "KOGADO"; } }
 //public override string Description{ get{ return arcStrings.KogadoDescription; } }
 //public override uint     Signature{ get{ return 0x61507948; } } // 'HyPa'
 //public override bool  IsHierarchic{ get{ return false; } }
 //public override bool     CanCreate{ get{ return true; } }
+
+   int32_t count;
+   struct pak_entry entries[];
 };
 
 /*
@@ -68,6 +72,6 @@ public sealed class Crc16 : ICheckSum
 */
 
 struct pak_file* pakopener_try_open( FILE* file );
-uint8_t* pakopener_open_entry( struct pak_file* arc, FILE* arc_file_in, struct pak_entry* entry );
+uint8_t* pakopener_open_entry( struct pak_file* pak, FILE* file, struct pak_entry* entry );
 
 #endif /* ARCKOGAKO_H */
