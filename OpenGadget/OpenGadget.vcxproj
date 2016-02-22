@@ -80,7 +80,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>..\..\SDL2\lib\x86</AdditionalLibraryDirectories>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(SolutionDir)..\SDL2\lib\x86\"*.dll "$(TargetDir)"</Command>
@@ -98,7 +98,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>..\..\SDL2\lib\x86</AdditionalLibraryDirectories>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(SolutionDir)..\SDL2\lib\x86\"*.dll "$(TargetDir)"</Command>
@@ -120,7 +120,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>..\..\SDL2\lib\x86</AdditionalLibraryDirectories>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(SolutionDir)..\SDL2\lib\x86\"*.dll "$(TargetDir)"</Command>
@@ -142,7 +142,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>..\..\SDL2\lib\x86</AdditionalLibraryDirectories>
       <SubSystem>Console</SubSystem>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy "$(SolutionDir)..\SDL2\lib\x86\"*.dll "$(TargetDir)"</Command>
@@ -151,6 +151,7 @@
   <ItemGroup>
     <ClCompile Include="dep\arckogado.c" />
     <ClCompile Include="dep\bstrlib.c" />
+    <ClCompile Include="graphics.c" />
     <ClCompile Include="isomap.c" />
     <ClCompile Include="opengadget.c" />
     <ClCompile Include="tbsloop.c" />
@@ -159,7 +160,9 @@
     <ClInclude Include="defines.h" />
     <ClInclude Include="dep\arckogako.h" />
     <ClInclude Include="dep\bstrlib.h" />
+    <ClInclude Include="graphics.h" />
     <ClInclude Include="isomap.h" />
+    <ClInclude Include="isomap_terrain.h" />
     <ClInclude Include="tbsloop.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
