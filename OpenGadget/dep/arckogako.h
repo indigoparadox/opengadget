@@ -59,6 +59,7 @@ struct pak_file {
 //public override bool     CanCreate{ get{ return true; } }
 
    int32_t count;
+   FILE* file;
    struct pak_entry entries[];
 };
 
@@ -72,6 +73,8 @@ public sealed class Crc16 : ICheckSum
 */
 
 struct pak_file* pakopener_try_open( FILE* file );
-uint8_t* pakopener_open_entry( struct pak_file* pak, FILE* file, struct pak_entry* entry );
+uint8_t* pakopener_open_entry( struct pak_file* pak, struct pak_entry* entry );
+void pakopener_free( struct pak_file* pak );
+uint8_t* mariel_unpack( uint8_t* input, uint32_t dest_size );
 
 #endif /* ARCKOGAKO_H */

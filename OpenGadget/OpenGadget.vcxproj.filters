@@ -18,12 +18,33 @@
     <ClCompile Include="dep\arckogado.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="main.c">
+    <ClCompile Include="opengadget.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="isomap.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dep\bstrlib.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tbsloop.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dep\arckogako.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="isomap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tbsloop.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="defines.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dep\bstrlib.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

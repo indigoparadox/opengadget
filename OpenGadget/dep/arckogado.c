@@ -168,6 +168,9 @@ struct pak_file* pakopener_try_open( FILE* file ) {
       fseek( file, index_offset, SEEK_SET );
    }
 
+   /* Keep the file handle around for the opener, below. */
+   file_out->file = file;
+
 cleanup:
 
    if( failure && NULL != file_out ) {
@@ -179,7 +182,7 @@ cleanup:
 }
 
 // public override Stream OpenEntry( ArcFile arc, Entry entry )
-uint8_t* pakopener_open_entry( struct pak_file* pak, FILE* file, struct pak_entry* entry ) {
+uint8_t* pakopener_open_entry( struct pak_file* pak, struct pak_entry* entry ) {
    //var input = arc.File.CreateStream (entry.Offset, entry.Size);
 
    uint8_t* unpacked = NULL;
@@ -193,8 +196,8 @@ uint8_t* pakopener_open_entry( struct pak_file* pak, FILE* file, struct pak_entr
       failure = 1;
       goto cleanup;
    }
-   fseek( file, entry->offset, SEEK_SET );
-   fread( packed, sizeof( uint8_t ), entry->size, file );
+   fseek( pak->file, entry->offset, SEEK_SET );
+   fread( packed, sizeof( uint8_t ), entry->size, pak->file );
 
    /*
    var packed_entry = entry as KogadoEntry;
@@ -259,13 +262,15 @@ uint8_t* pakopener_open_entry( struct pak_file* pak, FILE* file, struct pak_entr
    }
 
    if( 1 == entry->compression_type ) {
-#ifdef MARIELX
+//#ifdef MARIELX
       //var unpacked = new byte[packed_entry.UnpackedSize];
+      /*
       unpacked = calloc( sizeof( uint8_t ) * entry->unpacked_size );
       if( NULL == unpacked ) {
          failure = 1;
          goto cleanup;
       }
+      */
 
       //var mariel = new MarielEncoder();
       //mariel.Unpack (input, unpacked, unpacked.Length);
@@ -277,7 +282,7 @@ uint8_t* pakopener_open_entry( struct pak_file* pak, FILE* file, struct pak_entr
       {
          input.Dispose();
       */
-#endif /* MARIELX */
+//#endif /* MARIELX */
    }
 
    if( 0 == entry->compression_type ) {
@@ -296,6 +301,22 @@ cleanup:
    }
 
    return unpacked;
+}
+
+void pakopener_free( struct pak_file* pak ) {
+   if( NULL == pak ) {
+      goto cleanup;
+   }
+
+   if( NULL != pak->file ) {
+      fclose( pak->file );
+   }
+
+   free( pak );
+
+cleanup:
+
+   return;
 }
 
 #ifdef ARCKOGADO_CREATE
@@ -471,11 +492,39 @@ private static readonly ushort[] Crc16Table = {
 
 #endif /* ARCKOGADO_CREATE */
 
-#ifdef MARIELX
+//#ifdef MARIELX
+
+//public static void CopyOverlapped( byte[] data, int src, int dst, int count ) {
+static void mariel_copy_overlapped( uint8_t* data, int src, int dst, int count ) {
+   int preceding;
+   int i;
+   if( dst > src ) {
+      while( count > 0 ) {
+         //int preceding = System.Math.Min( dst - src, count );
+         if( count < (dst - src) ) {
+            preceding = count;
+         } else {
+            preceding = dst - src;
+         }
+         //System.Buffer.BlockCopy( data, src, data, dst, preceding );
+         for( i = 0; i < preceding ; i++ ) {
+            data[dst + i] = data[src + i];
+         }
+         dst += preceding;
+         count -= preceding;
+      }
+   } else {
+      //System.Buffer.BlockCopy( data, src, data, dst, count );
+      for( i = 0; i < count ; i++ ) {
+         data[dst + i] = data[src + i];
+      }
+   }
+}
+
 //internal class MarielEncoder
 //{
 //public void Unpack (Stream input, byte[] dest, int dest_size)
-uint8_t* mariel_unpack( uint8_t* input, int dest_size ) {
+uint8_t* mariel_unpack( uint8_t* input, uint32_t dest_size ) {
    int out_pos = 0;
    int i = 0;
    uint8_t b = 0;
@@ -530,13 +579,17 @@ uint8_t* mariel_unpack( uint8_t* input, int dest_size ) {
       }
 
       else if( count > 0x0f ) {
-         count = reader.ReadUInt16();
+         //count = reader.ReadUInt16();
+         memcpy( &count, &input[i], sizeof( uint16_t ) );
+         i += sizeof( uint16_t );
       }
 
       if( offset >= 0x0b ) {
          offset -= 0x0b;
          offset <<= 8;
-         offset |= reader.ReadByte();
+         //offset |= reader.ReadByte();
+         memcpy( &offset, &input[i], sizeof( uint8_t ) );
+         i += sizeof( uint8_t );
       }
 
       if( count > dest_size ) {
@@ -548,7 +601,8 @@ uint8_t* mariel_unpack( uint8_t* input, int dest_size ) {
          break;
       }
 
-      Binary.CopyOverlapped (dest, src, out_pos, count);
+      //Binary.CopyOverlapped (dest, src, out_pos, count);
+      mariel_copy_overlapped( dest, src, out_pos, count );
       out_pos += count;
       dest_size -= count;
    }
@@ -565,4 +619,4 @@ cleanup:
 //}
 //}
 
-#endif /* MARIELX */
+//#endif /* MARIELX */
