@@ -1,12 +1,60 @@
 
 #include "graphics.h"
 
-SDL_Surface* graphics_image_load( bstring image_name, struct pak_file* pak ) {
+static SDL_Renderer* opengadget_renderer = NULL;
+
+RETVAL graphics_init( void ) {
+   RETVAL retval = 0;
+   SDL_Window* win = NULL;
+
+   retval = SDL_Init( SDL_INIT_VIDEO );
+   if( 0 != retval ) {
+      SDL_LogCritical( SDL_LOG_CATEGORY_VIDEO, "SDL_Init: %s", SDL_GetError() );
+      goto cleanup;
+   }
+
+   win = SDL_CreateWindow( "OpenGadget", 100, 100, 640, 480, SDL_WINDOW_SHOWN );
+   if( NULL == win ) {
+      SDL_LogCritical( SDL_LOG_CATEGORY_VIDEO, "SDL_CreateWindow: %s", SDL_GetError() );
+      retval = 2;
+      goto cleanup;
+   }
+
+   opengadget_renderer = SDL_CreateRenderer( win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC );
+   if( NULL == opengadget_renderer ) {
+      SDL_LogCritical( SDL_LOG_CATEGORY_VIDEO, "SDL_CreateRenderer: %s", SDL_GetError() );
+      retval = 4;
+      goto cleanup;
+   }
+
+cleanup:
+
+   if( 0 != retval && NULL != win ) {
+      SDL_DestroyWindow( win );
+   }
+
+   return retval;
+}
+
+void graphics_begin_draw( void ) {
+   SDL_RenderClear( opengadget_renderer );
+}
+
+void graphics_end_draw( void ) {
+   SDL_RenderPresent( opengadget_renderer );
+}
+
+void graphics_sleep( int milliseconds ) {
+   SDL_Delay( milliseconds );
+}
+
+SDL_Texture* graphics_image_load( bstring image_name, struct pak_file* pak ) {
    int i;
    struct pak_entry* entry = NULL;
    SDL_Surface* image_out = NULL;
    uint8_t* image_data = NULL;
    SDL_RWops* image_rw = NULL;
+   SDL_Texture* texture_out = NULL;
 
    for( i = 0 ; pak->count > i ; i++ ) {
       /* TODO: Pick the shortest length possible so we don't overflow. */
@@ -29,6 +77,12 @@ SDL_Surface* graphics_image_load( bstring image_name, struct pak_file* pak ) {
    image_rw = SDL_RWFromConstMem( image_data, entry->unpacked_size );
 
    image_out = IMG_Load_RW( image_rw, 0 );
+   if( NULL == image_out ) {
+      /* TODO: Error message. */
+      goto cleanup;
+   }
+
+   texture_out = SDL_CreateTextureFromSurface( opengadget_renderer, image_out );
 
 cleanup:
 
@@ -41,4 +95,8 @@ cleanup:
    }
 
    return image_out;
+}
+
+void graphics_draw( SDL_Texture* texture, const SDL_Rect* src_rect, const SDL_Rect* dest_rect ) {
+   SDL_RenderCopy( opengadget_renderer, texture, src_rect, dest_rect );
 }
