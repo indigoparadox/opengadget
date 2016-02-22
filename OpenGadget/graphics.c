@@ -94,9 +94,37 @@ cleanup:
       free( image_data );
    }
 
-   return image_out;
+   if( NULL != image_out ) {
+      SDL_FreeSurface( image_out );
+   }
+
+   return texture_out;
 }
 
-void graphics_draw( SDL_Texture* texture, const SDL_Rect* src_rect, const SDL_Rect* dest_rect ) {
+static void graphics_draw( SDL_Texture* texture, const SDL_Rect* src_rect, const SDL_Rect* dest_rect ) {
    SDL_RenderCopy( opengadget_renderer, texture, src_rect, dest_rect );
+}
+
+void graphics_draw_tile( SDL_Texture* texture, int src_x, int src_y, int dest_x, int dest_y ) {
+   static SDL_Rect tile_rect;
+   static SDL_Rect screen_rect;
+   static uint8_t rects_init = 0;
+
+   if( 0 == rects_init ) {
+      /* Setup rectangles for the first time. */
+      memset( &tile_rect, '\0', sizeof( SDL_Rect ) );
+      memset( &screen_rect, '\0', sizeof( SDL_Rect ) );
+
+      screen_rect.w = GRAPHICS_TILE_WIDTH;
+      screen_rect.h = GRAPHICS_TILE_HEIGHT;
+      tile_rect.w = GRAPHICS_TILE_WIDTH;
+      tile_rect.h = GRAPHICS_TILE_HEIGHT;
+   }
+
+   tile_rect.x = src_x;
+   tile_rect.y = src_y;
+   screen_rect.x = dest_x;
+   screen_rect.y = dest_y;
+
+   graphics_draw( texture, &tile_rect, &screen_rect );
 }

@@ -9,12 +9,15 @@
 #include "dep\arckogako.h"
 #include "defines.h"
 
+#define GRAPHICS_TILE_WIDTH 48
+#define GRAPHICS_TILE_HEIGHT 48
+
 RETVAL graphics_init( void );
 void graphics_begin_draw( void );
 void graphics_end_draw( void );
 void graphics_sleep( int milliseconds );
 SDL_Texture* graphics_image_load( bstring image_name, struct pak_file* pak );
-void graphics_draw( SDL_Texture* texture, const SDL_Rect* src_rect, const SDL_Rect* dest_rect );
+void graphics_draw_tile( SDL_Texture* texture, int src_x, int src_y, int dest_x, int dest_y );
 
 #endif /* GRAPHICS_H */
 
