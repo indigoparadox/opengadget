@@ -12,21 +12,12 @@ RETVAL tbsloop_loop( struct tbsloop_config* config ) {
    SDL_Texture* terrain_images[0xFF];
    const char* gfx_tile_name_format = "MP%d_%02d_%d";
    bstring gfx_tile_name = NULL;
-   SDL_Rect sprite_rect;
-   SDL_Rect screen_rect;
    SDL_Texture* sprite_texture = NULL;
 
    gfx_data_path = bformat( "%s\\graphic.pak", bdata( data_path ) );
    gfx_tile_name = bfromcstr( "" );
 
    memset( terrain_images, '\0', 0xFF * sizeof( SDL_Texture* ) );
-   memset( &sprite_rect, '\0', sizeof( SDL_Rect ) );
-   memset( &screen_rect, '\0', sizeof( SDL_Rect ) );
-
-   screen_rect.w = ISOMAP_TILE_WIDTH;
-   screen_rect.h = ISOMAP_TILE_HEIGHT;
-   sprite_rect.w = ISOMAP_TILE_WIDTH;
-   sprite_rect.h = ISOMAP_TILE_HEIGHT;
 
    gfx_data_file = fopen( bdata( gfx_data_path ), "rb" );
    if( NULL == gfx_data_file ) {
@@ -39,6 +30,7 @@ RETVAL tbsloop_loop( struct tbsloop_config* config ) {
 
    //isomap_terr
 
+   /*
    bassignformat( gfx_tile_name, gfx_tile_name_format, 1, ISOMAP_TERRAIN_PLAINS, 0 );
    terrain_images[ISOMAP_TERRAIN_PLAINS] = graphics_image_load( gfx_tile_name, gfx_data_pak );
    bassignformat( gfx_tile_name, gfx_tile_name_format, 1, ISOMAP_TERRAIN_ROAD, 0 );
@@ -47,6 +39,11 @@ RETVAL tbsloop_loop( struct tbsloop_config* config ) {
    terrain_images[ISOMAP_TERRAIN_SWAMP] = graphics_image_load( gfx_tile_name, gfx_data_pak );
    bassignformat( gfx_tile_name, gfx_tile_name_format, 1, ISOMAP_TERRAIN_TREES, 0 );
    terrain_images[ISOMAP_TERRAIN_TREES] = graphics_image_load( gfx_tile_name, gfx_data_pak );
+   */
+   //tbsloop_load_texture( ISOMAP_TERRAIN_PLAINS );
+   for( i = 0 ; ISOMAP_TERRAIN_HQ > i ; i++ ) {
+      tbsloop_load_texture( i );
+   }
 
    for( i = 0 ; 10 > i ; i++ ) {
 
@@ -62,9 +59,12 @@ RETVAL tbsloop_loop( struct tbsloop_config* config ) {
                continue;
             }
 
-            screen_rect.x = x * screen_rect.w;
-            screen_rect.y = y * screen_rect.h;
-            graphics_draw( sprite_texture, &sprite_rect, &screen_rect );
+            graphics_draw_tile(
+               sprite_texture,
+               0, 0,
+               x * GRAPHICS_TILE_WIDTH,
+               y * GRAPHICS_TILE_HEIGHT
+            );
          }
       }
 
@@ -77,7 +77,7 @@ cleanup:
    
    for( i = 0; 0xFF > i; i++ ) {
       if( NULL != terrain_images[i] ) {
-         SDL_FreeSurface( terrain_images[i] );
+         SDL_DestroyTexture( terrain_images[i] );
       }
    }
 

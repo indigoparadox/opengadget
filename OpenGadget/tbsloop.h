@@ -9,6 +9,10 @@
 #include "isomap_terrain.h"
 #include "graphics.h"
 
+#define tbsloop_load_texture( terrain_id ) \
+   bassignformat( gfx_tile_name, gfx_tile_name_format, 1, terrain_id, 0 ); \
+   terrain_images[terrain_id] = graphics_image_load( gfx_tile_name, gfx_data_pak );
+
 struct tbsloop_config {
    struct isomap* map;
 };
