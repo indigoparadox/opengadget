@@ -7,7 +7,10 @@
 
 #include "dep/bstrlib.h"
 
-#define RETVAL uint8_t
+typedef uint8_t RETVAL;
+
+#define ISOMAP_TILE_WIDTH 48
+#define ISOMAP_TILE_HEIGHT 48
 
 #define LOG_ERROR( ... ) SDL_LogError( SDL_LOG_CATEGORY_APPLICATION, __VA_ARGS__ )
 
