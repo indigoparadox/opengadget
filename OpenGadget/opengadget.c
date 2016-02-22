@@ -7,15 +7,22 @@
 #include "tbsloop.h"
 
 SDL_Renderer* opengadget_renderer = NULL;
+bstring data_path = NULL;
 
 int main( int argc, char* argv[] ) {
    RETVAL retval = 0;
    SDL_Window* win = NULL;
    FILE* pak_file = NULL;
+   FILE* gfx_file = NULL;
    struct pak_file* map_pak = NULL;
+   struct pak_file* gfx_pak = NULL;
    struct isomap* map = NULL;
    struct tbsloop_config map_config;
    uint8_t* map_data = NULL;
+   bstring map_data_path = NULL;
+
+   data_path = bfromcstr( argv[1] );
+   map_data_path = bformat( "%s\\map.pak", argv[1] );
 
    retval = SDL_Init( SDL_INIT_VIDEO );
    if(  0 != retval ) {
@@ -37,7 +44,7 @@ int main( int argc, char* argv[] ) {
       goto cleanup;
    }
 
-   pak_file = fopen( argv[1], "rb" );
+   pak_file = fopen( bdata( map_data_path ), "rb" );
 
    map_pak = pakopener_try_open( pak_file );
    if( NULL == map_pak ) {

@@ -6,6 +6,8 @@
 
 #include "defines.h"
 #include "isomap.h"
+#include "isomap_terrain.h"
+#include "graphics.h"
 
 struct tbsloop_config {
    struct isomap* map;

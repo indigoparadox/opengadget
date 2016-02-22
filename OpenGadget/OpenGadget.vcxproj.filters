@@ -30,6 +30,9 @@
     <ClCompile Include="tbsloop.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="graphics.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dep\arckogako.h">
@@ -45,6 +48,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="dep\bstrlib.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="graphics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="isomap_terrain.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
