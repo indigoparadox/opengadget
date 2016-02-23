@@ -43,11 +43,16 @@ int main( int argc, char* argv[] ) {
       goto cleanup;
    }
 
+   map_config.map_name = bfromcstr( map_pak->entries[0].name );
    map_config.map = isomap_load_map( map_data, map_pak->entries[0].unpacked_size );
 
    tbsloop_loop( &map_config );
 
 cleanup:
+
+   if( NULL != map_config.map_name ) {
+      bdestroy( map_config.map_name );
+   }
 
    if( NULL != map_pak ) {
       /* This frees pak_file above, too. */
@@ -57,6 +62,8 @@ cleanup:
    if( NULL != map_data ) {
       free( map_data );
    }
+
+   graphics_cleanup();
 
    SDL_Quit();
 
