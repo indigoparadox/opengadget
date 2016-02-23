@@ -11,8 +11,12 @@
 
 #define GRAPHICS_TILE_WIDTH 48
 #define GRAPHICS_TILE_HEIGHT 48
+#define GRAPHICS_TILE_OFFSET_X 24
+#define GRAPHICS_TILE_OFFSET_Y 24
 
 RETVAL graphics_init( void );
+void graphics_cleanup( void );
+void graphics_set_title( bstring title );
 void graphics_begin_draw( void );
 void graphics_end_draw( void );
 void graphics_sleep( int milliseconds );

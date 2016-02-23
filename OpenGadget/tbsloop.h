@@ -15,6 +15,7 @@
 
 struct tbsloop_config {
    struct isomap* map;
+   bstring map_name;
 };
 
 RETVAL tbsloop_loop( struct tbsloop_config* config );

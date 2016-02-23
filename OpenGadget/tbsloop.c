@@ -13,11 +13,15 @@ RETVAL tbsloop_loop( struct tbsloop_config* config ) {
    const char* gfx_tile_name_format = "MP%d_%02d_%d";
    bstring gfx_tile_name = NULL;
    SDL_Texture* sprite_texture = NULL;
+   SDL_Rect viewport;
+
+   graphics_set_title( config->map_name );
 
    gfx_data_path = bformat( "%s\\graphic.pak", bdata( data_path ) );
    gfx_tile_name = bfromcstr( "" );
 
    memset( terrain_images, '\0', 0xFF * sizeof( SDL_Texture* ) );
+   memset( &viewport, '\0', sizeof( SDL_Rect ) );
 
    gfx_data_file = fopen( bdata( gfx_data_path ), "rb" );
    if( NULL == gfx_data_file ) {
@@ -45,25 +49,29 @@ RETVAL tbsloop_loop( struct tbsloop_config* config ) {
       tbsloop_load_texture( i );
    }
 
+   viewport.w = 640;
+   viewport.h = 480;
+   viewport.y = 200;
+
    for( i = 0 ; 10 > i ; i++ ) {
 
       graphics_begin_draw();
       //SDL_RenderCopy()
 
-      for( y = 0 ; config->map->height > y ; y++ ) {
-         for( x = 0 ; config->map->width > x ; x++ ) {
+      for( x = 0 ; config->map->width > x ; x++ ) {
+         for( y = config->map->height ; 0 <= y ; y-- ) {
 
             tile_index = config->map->tiles[(y*x) + x];
             sprite_texture = terrain_images[tile_index];
             if( NULL == sprite_texture ) {
                continue;
             }
-
+            
             graphics_draw_tile(
                sprite_texture,
                0, 0,
-               x * GRAPHICS_TILE_WIDTH,
-               y * GRAPHICS_TILE_HEIGHT
+               (y * GRAPHICS_TILE_WIDTH / 2) + (x * GRAPHICS_TILE_WIDTH / 2),
+               viewport.y + ((x * GRAPHICS_TILE_OFFSET_X / 2) - (y * GRAPHICS_TILE_OFFSET_X / 2))
             );
          }
       }
