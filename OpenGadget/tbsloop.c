@@ -14,6 +14,7 @@ RETVAL tbsloop_loop( struct tbsloop_config* config ) {
    bstring gfx_tile_name = NULL;
    SDL_Texture* sprite_texture = NULL;
    SDL_Rect viewport;
+   int x_y_index;
 
    graphics_set_title( config->map_name );
 
@@ -53,15 +54,16 @@ RETVAL tbsloop_loop( struct tbsloop_config* config ) {
    viewport.h = 480;
    viewport.y = 200;
 
-   for( i = 0 ; 10 > i ; i++ ) {
+   for( i = 0 ; 10000 > i ; i++ ) {
 
       graphics_begin_draw();
       //SDL_RenderCopy()
 
-      for( x = 0 ; config->map->width > x ; x++ ) {
-         for( y = config->map->height ; 0 <= y ; y-- ) {
+      for( x = config->map->width - 1 ; 0 <= x ; x-- ) {
+         for( y = 0 ; config->map->height > y ; y++ ) {
 
-            tile_index = config->map->tiles[(y*x) + x];
+            x_y_index = (x * config->map->height) + y;
+            tile_index = config->map->tiles[x_y_index];
             sprite_texture = terrain_images[tile_index];
             if( NULL == sprite_texture ) {
                continue;
