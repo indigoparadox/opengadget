@@ -36,6 +36,8 @@ struct isomap* isomap_load_map( uint8_t* map_data, uint32_t map_data_len ) {
    */
 
    isomap_out->tiles = calloc( map_portion_len, sizeof( uint8_t ) );
+
+#if 0
    //memcpy( isomap_out->tiles, &(map_data[cursor]), map_portion_len );
    //x_src = cursor + map_portion_len - isomap_out->width;
    isomap_tiles_x_cursor = isomap_out->tiles;
@@ -49,6 +51,9 @@ struct isomap* isomap_load_map( uint8_t* map_data, uint32_t map_data_len ) {
       }
       */
    }
+#endif
+
+   memcpy( isomap_out->tiles, &(map_data[cursor]), map_portion_len );
 
 cleanup:
    
