@@ -47,49 +47,48 @@ void isomap_render_cleanup( void ) {
    }
 }
 
-void isomap_render_draw_tile( uint8_t* tiles, int map_width, int map_height, SDL_Rect* viewport, ISOMAP_RENDER_ROTATE rotation ) {
+void isomap_render_draw_tile( int x, int y, uint8_t* tiles, int map_width, int map_height, SDL_Rect* viewport, ISOMAP_RENDER_ROTATE rotation ) {
    int x_y_index;
-   int i = 0, x, y, projected_x, projected_y, tile_index;
+   int i = 0, projected_x, projected_y, tile_index;
    SDL_Texture* sprite_texture = NULL;
 
-   for( x = map_width - 1 ; 0 <= x ; x-- ) {
-      for( y = 0 ; map_height > y ; y++ ) {
+   switch( rotation ) {
+      case ISOMAP_RENDER_ROTATE_0:
+         projected_x = y;
+         projected_y = map_height - x - 1;
+         break;
 
-         switch( rotation ) {
-            case ISOMAP_RENDER_ROTATE_0:
-               projected_x = y;
-               projected_y = map_height - x - 1;
-               break;
+      case ISOMAP_RENDER_ROTATE_90:
+         projected_x = map_width - x - 1;
+         projected_y = map_height - y - 1;
+         break;
 
-            case ISOMAP_RENDER_ROTATE_90:
-               projected_x = map_width - x - 1;
-               projected_y = map_height - y - 1;
-               break;
+      case ISOMAP_RENDER_ROTATE_180:
+         projected_x = map_width - y - 1;
+         projected_y = x;
+         break;
 
-            case ISOMAP_RENDER_ROTATE_180:
-               projected_x = map_width - y - 1;
-               projected_y = x;
-               break;
-
-            case ISOMAP_RENDER_ROTATE_270:
-               projected_x = x;
-               projected_y = y;
-               break;
-         }
-
-         x_y_index = (x * map_height) + y;
-         tile_index = tiles[x_y_index];
-         sprite_texture = isomap_render_textures[tile_index];
-         if( NULL == sprite_texture ) {
-            continue;
-         }
-
-         graphics_draw_tile(
-            sprite_texture,
-            0, 0,
-            viewport->x + (projected_y * GRAPHICS_TILE_WIDTH / 2) + (projected_x * GRAPHICS_TILE_WIDTH / 2),
-            viewport->y + ((projected_x * GRAPHICS_TILE_OFFSET_X / 2) - (projected_y * GRAPHICS_TILE_OFFSET_X / 2))
-         );
-      }
+      case ISOMAP_RENDER_ROTATE_270:
+         projected_x = x;
+         projected_y = y;
+         break;
    }
+
+   x_y_index = (x * map_height) + y;
+   tile_index = tiles[x_y_index];
+   sprite_texture = isomap_render_textures[tile_index];
+   if( NULL == sprite_texture ) {
+      goto cleanup;
+   }
+
+   graphics_draw_tile(
+      sprite_texture,
+      0, 0,
+      viewport->x + (projected_y * GRAPHICS_TILE_WIDTH / 2) + (projected_x * GRAPHICS_TILE_WIDTH / 2),
+      viewport->y + ((projected_x * GRAPHICS_TILE_OFFSET_X / 2) - (projected_y * GRAPHICS_TILE_OFFSET_X / 2))
+   );
+
+cleanup:
+
+   return;
 }
