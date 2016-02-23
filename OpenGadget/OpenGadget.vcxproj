@@ -153,6 +153,7 @@
     <ClCompile Include="dep\bstrlib.c" />
     <ClCompile Include="graphics.c" />
     <ClCompile Include="isomap.c" />
+    <ClCompile Include="isomap_render.c" />
     <ClCompile Include="opengadget.c" />
     <ClCompile Include="tbsloop.c" />
   </ItemGroup>
@@ -162,6 +163,7 @@
     <ClInclude Include="dep\bstrlib.h" />
     <ClInclude Include="graphics.h" />
     <ClInclude Include="isomap.h" />
+    <ClInclude Include="isomap_render.h" />
     <ClInclude Include="isomap_terrain.h" />
     <ClInclude Include="tbsloop.h" />
   </ItemGroup>
