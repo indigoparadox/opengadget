@@ -52,7 +52,7 @@ void graphics_set_title( bstring title ) {
    SDL_SetWindowTitle( opengadget_window, bdata( title ) );
 }
 
-void graphics_begin_draw( void ) {
+void graphics_clear( void ) {
    SDL_RenderClear( opengadget_renderer );
 }
 

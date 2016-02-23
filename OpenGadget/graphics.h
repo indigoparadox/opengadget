@@ -17,7 +17,7 @@
 RETVAL graphics_init( void );
 void graphics_cleanup( void );
 void graphics_set_title( bstring title );
-void graphics_begin_draw( void );
+void graphics_clear( void );
 void graphics_end_draw( void );
 void graphics_sleep( int milliseconds );
 SDL_Texture* graphics_image_load( bstring image_name, struct pak_file* pak );
