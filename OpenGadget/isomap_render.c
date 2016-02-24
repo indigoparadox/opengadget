@@ -71,40 +71,37 @@ static void isomap_render_select_tile(
    const ISOMAP_RENDER_ROTATE rotation,
    struct isomap_render_texture* texture_selection
 ) {
-#if 1
    ISOMAP_RENDER_BITWISE sides_sum = 0;
    ISOMAP_RENDER_BITWISE test_sum = 0;
    ISOMAP_RENDER_BITWISE temp_sum = 0;
    uint8_t current_tile;
    uint8_t test_tile;
+   int tiles_count = map_width * map_height;
 
    texture_selection->texture_index = tiles[isomap_get_tile( x, y, map_height )];
    current_tile = tiles[isomap_get_tile( x, y, map_height )];
 
-   //isomap_render_tile_rotate( x, y, map_width, map_height, i, rotation );
-
-#if 1
    /* Above */
    test_tile = tiles[isomap_get_tile( x, y + 1, map_height )];
-   if( isomap_render_adjacent( current_tile, test_tile ) ) {
+   if( isomap_render_adjacent( current_tile, test_tile, isomap_get_tile( x, y + 1, map_height ), tiles_count ) ) {
       sides_sum += 1;
    }
 
    /* Left */
    test_tile = tiles[isomap_get_tile( x - 1, y, map_height )];
-   if( isomap_render_adjacent( current_tile, test_tile ) ) {
+   if( isomap_render_adjacent( current_tile, test_tile, isomap_get_tile( x - 1, y, map_height ), tiles_count ) ) {
       sides_sum += 8;
    }
 
    /* Below */
    test_tile = tiles[isomap_get_tile( x, y - 1, map_height )];
-   if( isomap_render_adjacent( current_tile, test_tile ) ) {
+   if( isomap_render_adjacent( current_tile, test_tile, isomap_get_tile( x, y - 1, map_height ), tiles_count ) ) {
       sides_sum += 4;
    }
 
    /* Right */
    test_tile = tiles[isomap_get_tile( x + 1, y, map_height )];
-   if( isomap_render_adjacent( current_tile, test_tile ) ) {
+   if( isomap_render_adjacent( current_tile, test_tile, isomap_get_tile( x + 1, y, map_height ), tiles_count ) ) {
       sides_sum += 2;
    }
 
@@ -127,78 +124,6 @@ static void isomap_render_select_tile(
          sides_sum = temp_sum;
          break;
    }
-#endif
-
-#if 0
-   switch( rotation ) {
-      case ISOMAP_RENDER_ROTATE_0:
-         /* Above */
-         test_tile = tiles[isomap_get_tile( x, y + 1, map_height )];
-         if( isomap_render_adjacent( current_tile, test_tile ) ) {
-            sides_sum += 1;
-         }
-
-         /* Left */
-         test_tile = tiles[isomap_get_tile( x - 1, y, map_height )];
-         if( isomap_render_adjacent( current_tile, test_tile ) ) {
-            sides_sum += 8;
-         }
-
-         /* Below */
-         test_tile = tiles[isomap_get_tile( x, y - 1, map_height )];
-         if( isomap_render_adjacent( current_tile, test_tile ) ) {
-            sides_sum += 4;
-         }
-
-         /* Right */
-         test_tile = tiles[isomap_get_tile( x + 1, y, map_height )];
-         if( isomap_render_adjacent( current_tile, test_tile ) ) {
-            sides_sum += 2;
-         }
-         break;
-
-      case ISOMAP_RENDER_ROTATE_90:
-         /* Above */
-         test_tile = tiles[isomap_get_tile( x + 1, y, map_width )];
-         if( isomap_render_adjacent( current_tile, test_tile ) ) {
-            sides_sum += 1;
-         }
-
-         /* Left */
-         test_tile = tiles[isomap_get_tile( y + 1, y, map_width )];
-         if( isomap_render_adjacent( current_tile, test_tile ) ) {
-            sides_sum += 8;
-         }
-
-         /* Below */
-         test_tile = tiles[isomap_get_tile( x - 1, y, map_width )];
-         if( isomap_render_adjacent( current_tile, test_tile ) ) {
-            sides_sum += 4;
-         }
-
-         /* Right */
-         test_tile = tiles[isomap_get_tile( y - 1, y, map_width )];
-         if( isomap_render_adjacent( current_tile, test_tile ) ) {
-            sides_sum += 2;
-         }
-         break;
-
-   }
-#endif
-
-#if 0
-   int x_add, y_add;
-   for( x_add = -1 ; x_add < 2 ; x_add += 2 ) {
-      for( y_add = -1 ; y_add < 2 ; x_add += 2 ) {
-         if( isomap_render_adjacent(
-            tiles[isomap_get_tile( x + 1, y, map_height )],
-            tiles[isomap_get_tile( x, y, map_height )]
-         ) ) {
-            sides_sum += 8;
-         }
-      }
-   }
-#endif
 
    if( 0 != sides_sum ) {
       //sides_sum = 15 - sides_sum;
@@ -219,12 +144,6 @@ static void isomap_render_select_tile(
    assert( 144 >= texture_selection->sprite_rect.y );
    assert( 144 >= texture_selection->sprite_rect.x );
 #endif /* DEBUG */
-
-#else
-   texture_selection->texture_index = tiles[isomap_get_tile( x, y, map_height )];
-   texture_selection->sprite_rect.x = 0;
-   texture_selection->sprite_rect.y = 0;
-#endif
 }
 
 void isomap_render_draw_tile( 

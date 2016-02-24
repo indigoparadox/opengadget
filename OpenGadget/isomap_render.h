@@ -31,14 +31,31 @@ struct isomap_render_texture {
    bassignformat( gfx_tile_name, gfx_tile_name_format, 1, terrain_id, 0 ); \
    isomap_render_textures[terrain_id] = graphics_image_load( gfx_tile_name, gfx_data_pak );
 
-#define isomap_render_adjacent( tile_1, tile_2 ) \
+#define isomap_render_adjacent( tile_1, tile_2, tile_index, tiles_count ) \
       ( \
          tile_1 == tile_2 || \
+         ( tiles_count <= tile_index || 0 > tile_index ) || \
          ( \
             ISOMAP_TERRAIN_SEA == tile_1 && ( \
                ISOMAP_TERRAIN_RIVER == tile_2 || \
                ISOMAP_TERRAIN_BRIDGE == tile_2 || \
                ISOMAP_TERRAIN_BEACH == tile_2 \
+            ) \
+         ) || ( \
+            ISOMAP_TERRAIN_RIVER == tile_1 && ( \
+               ISOMAP_TERRAIN_SEA == tile_2 || \
+               ISOMAP_TERRAIN_BRIDGE == tile_2 \
+            ) \
+         )  || ( \
+            ISOMAP_TERRAIN_BEACH == tile_1 && ( \
+               ISOMAP_TERRAIN_SEA == tile_2 \
+            ) \
+         ) || ( \
+            ISOMAP_TERRAIN_BRIDGE == tile_1 && ( \
+               ISOMAP_TERRAIN_PLAINS == tile_2 || \
+               ISOMAP_TERRAIN_WASTE == tile_2 || \
+               ISOMAP_TERRAIN_TREES == tile_2 || \
+               ISOMAP_TERRAIN_ROAD == tile_2 \
             ) \
          ) \
       )
