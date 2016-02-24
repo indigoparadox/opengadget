@@ -62,6 +62,12 @@ void isomap_render_cleanup( void ) {
    }
 }
 
+static uint8_t isomap_render_select_tile( const int x, const int y, const uint8_t* tiles ) {
+   uint8_t tile_index_out = 0;
+
+   return tile_index_out;
+}
+
 void isomap_render_draw_tile( 
    const int x,
    const int y,
@@ -114,10 +120,4 @@ void isomap_render_draw_tile(
 cleanup:
 
    return;
-}
-
-uint8_t isomap_render_select_tile( const int x, const int y, const uint8_t* tiles ) {
-   uint8_t tile_index_out = 0;
-
-   return tile_index_out;
 }

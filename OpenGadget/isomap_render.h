@@ -28,10 +28,5 @@ void isomap_render_draw_tile(
    const SDL_Rect* viewport,
    const ISOMAP_RENDER_ROTATE rotation
 );
-uint8_t isomap_render_select_tile(
-   const int x,
-   const int y,
-   const uint8_t* tiles
-);
 
 #endif /* ISOMAP_RENDER_H */
