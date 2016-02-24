@@ -13,6 +13,8 @@
 #define GRAPHICS_TILE_HEIGHT 48
 #define GRAPHICS_TILE_OFFSET_X 24
 #define GRAPHICS_TILE_OFFSET_Y 24
+#define GRAPHICS_TILES_X_COUNT 4
+#define GRAPHICS_TILES_Y_COUNT 4
 
 OG_RETVAL graphics_init( void );
 void graphics_cleanup( void );
