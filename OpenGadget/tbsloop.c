@@ -6,8 +6,9 @@ extern bstring data_path;
 OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
    OG_RETVAL retval = 0;
    int i = 0;
-   uint32_t x, y;
+   int j, k, j_max, k_max, x_iter, y_iter;
    SDL_Rect viewport;
+   ISOMAP_RENDER_ROTATE rotation = ISOMAP_RENDER_ROTATE_90;
 
    graphics_set_title( config->map_name );
 
@@ -20,21 +21,47 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
 
    viewport.w = 640;
    viewport.h = 480;
-   viewport.x = -10;
+   viewport.x = 0;
    viewport.y = 200;
+
+   switch( rotation ) {
+      case ISOMAP_RENDER_ROTATE_0:
+         j_max = config->map->width;
+         k_max = config->map->height;
+         break;
+
+      case ISOMAP_RENDER_ROTATE_90:
+         k_max = config->map->width;
+         j_max = config->map->height;
+         break;
+
+   }
 
    graphics_clear();
    //SDL_RenderCopy()
 
-   for( x = 0 ; config->map->width > x ; x++ ) {
-      for( y = 0 ; config->map->height > y ; y++ ) {
+   for( j = 0 ; j_max > j ; j++ ) {
+      for( k = 0 ; k_max > k ; k++ ) {
+         switch( rotation ) {
+            case ISOMAP_RENDER_ROTATE_0:
+               x_iter = j;
+               y_iter = k;
+               break;
+
+            case ISOMAP_RENDER_ROTATE_90:
+               x_iter = k;
+               y_iter = j;
+               break;
+
+         }
+
          isomap_render_draw_tile(
-            x, y,
+            x_iter, y_iter,
             config->map->tiles,
             config->map->width,
             config->map->height,
             &viewport,
-            ISOMAP_RENDER_ROTATE_0
+            rotation
          );
       }
    }
