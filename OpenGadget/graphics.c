@@ -183,10 +183,6 @@ cleanup:
    return texture_out;
 }
 
-static void graphics_draw( const SDL_Texture* texture, const SDL_Rect* src_rect, const SDL_Rect* dest_rect ) {
-   SDL_RenderCopy( opengadget_renderer, texture, src_rect, dest_rect );
-}
-
 void graphics_draw_tile( const SDL_Texture* texture, const int src_x, const int src_y, const int dest_x, const int dest_y ) {
    static SDL_Rect tile_rect;
    static SDL_Rect screen_rect;
@@ -201,6 +197,8 @@ void graphics_draw_tile( const SDL_Texture* texture, const int src_x, const int 
       screen_rect.h = GRAPHICS_TILE_HEIGHT;
       tile_rect.w = GRAPHICS_TILE_WIDTH;
       tile_rect.h = GRAPHICS_TILE_HEIGHT;
+
+      rects_init = 1;
    }
 
    tile_rect.x = src_x;
@@ -208,5 +206,5 @@ void graphics_draw_tile( const SDL_Texture* texture, const int src_x, const int 
    screen_rect.x = dest_x;
    screen_rect.y = dest_y;
 
-   graphics_draw( texture, &tile_rect, &screen_rect );
+   SDL_RenderCopy( opengadget_renderer, texture, &tile_rect, &screen_rect );
 }
