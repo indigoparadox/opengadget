@@ -4,8 +4,8 @@
 SDL_Renderer* opengadget_renderer = NULL;
 SDL_Window* opengadget_window = NULL;
 
-RETVAL graphics_init( void ) {
-   RETVAL retval = 0;
+OG_RETVAL graphics_init( void ) {
+   OG_RETVAL retval = 0;
 
    retval = SDL_Init( SDL_INIT_VIDEO );
    if( 0 != retval ) {
@@ -48,7 +48,7 @@ void graphics_cleanup( void ) {
    }
 }
 
-void graphics_set_title( bstring title ) {
+void graphics_set_title( const bstring title ) {
    SDL_SetWindowTitle( opengadget_window, bdata( title ) );
 }
 
@@ -60,7 +60,7 @@ void graphics_end_draw( void ) {
    SDL_RenderPresent( opengadget_renderer );
 }
 
-void graphics_sleep( int milliseconds ) {
+void graphics_sleep( const int milliseconds ) {
    SDL_Delay( milliseconds );
 }
 
@@ -89,17 +89,15 @@ static void graphics_texture_colorkey( SDL_Texture* texture, int h, uint8_t r, u
    SDL_UnlockTexture( texture );
 }
 
-SDL_Texture* graphics_image_load( bstring image_name, struct pak_file* pak ) {
+SDL_Texture* graphics_image_load( const bstring image_name, const struct pak_file* pak ) {
    int i;
-   struct pak_entry* entry = NULL;
+   const struct pak_entry* entry = NULL;
    SDL_Surface* surface_temp = NULL;
    SDL_Surface* image_opt = NULL;
    uint8_t* image_data = NULL;
    SDL_RWops* image_rw = NULL;
    SDL_Texture* texture_out = NULL;
    SDL_Surface* surface_formatted = NULL;
-   uint32_t* pixels;
-   int pitch;
    
    for( i = 0 ; pak->count > i ; i++ ) {
       /* TODO: Pick the shortest length possible so we don't overflow. */
@@ -185,11 +183,11 @@ cleanup:
    return texture_out;
 }
 
-static void graphics_draw( SDL_Texture* texture, const SDL_Rect* src_rect, const SDL_Rect* dest_rect ) {
+static void graphics_draw( const SDL_Texture* texture, const SDL_Rect* src_rect, const SDL_Rect* dest_rect ) {
    SDL_RenderCopy( opengadget_renderer, texture, src_rect, dest_rect );
 }
 
-void graphics_draw_tile( SDL_Texture* texture, int src_x, int src_y, int dest_x, int dest_y ) {
+void graphics_draw_tile( const SDL_Texture* texture, const int src_x, const int src_y, const int dest_x, const int dest_y ) {
    static SDL_Rect tile_rect;
    static SDL_Rect screen_rect;
    static uint8_t rects_init = 0;

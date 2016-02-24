@@ -9,11 +9,10 @@
 bstring data_path = NULL;
 
 int main( int argc, char* argv[] ) {
-   RETVAL retval = 0;
+   OG_RETVAL retval = 0;
    FILE* pak_file = NULL;
    FILE* gfx_file = NULL;
    struct pak_file* map_pak = NULL;
-   struct pak_file* gfx_pak = NULL;
    struct isomap* map = NULL;
    struct tbsloop_config map_config;
    uint8_t* map_data = NULL;
@@ -46,9 +45,20 @@ int main( int argc, char* argv[] ) {
    map_config.map_name = bfromcstr( map_pak->entries[0].name );
    map_config.map = isomap_load_map( map_data, map_pak->entries[0].unpacked_size );
 
-   tbsloop_loop( &map_config );
+   /* Free this outside of cleanup since it's been loaded and we can save     *
+    * some memory.                                                            */
+   free( map_data );
+   map_data = NULL;
+   pakopener_free( map_pak );
+   map_pak = NULL;
+
+   retval = tbsloop_loop( &map_config );
 
 cleanup:
+   
+   if( NULL != pak_file ) {
+      fclose( pak_file );
+   }
 
    if( NULL != map_config.map_name ) {
       bdestroy( map_config.map_name );

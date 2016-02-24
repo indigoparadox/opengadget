@@ -38,7 +38,7 @@ struct pak_entry {
    //}
    char name[0x15];
    char ext[3];
-   int64_t offset;
+   long offset; /* fseek() uses long. */
    uint32_t unpacked_size;
    uint32_t size;
    uint8_t compression_type;
@@ -73,7 +73,7 @@ public sealed class Crc16 : ICheckSum
 */
 
 struct pak_file* pakopener_try_open( FILE* file );
-uint8_t* pakopener_open_entry( struct pak_file* pak, struct pak_entry* entry );
+uint8_t* pakopener_open_entry( const struct pak_file* pak, const struct pak_entry* entry );
 void pakopener_free( struct pak_file* pak );
 uint8_t* mariel_unpack( uint8_t* input, uint32_t dest_size );
 

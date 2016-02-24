@@ -3,16 +3,20 @@
 
 extern bstring data_path;
 
-RETVAL tbsloop_loop( struct tbsloop_config* config ) {
-   RETVAL retval = 0;
-   int i = 0, x, y;
+OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
+   OG_RETVAL retval = 0;
+   int i = 0;
+   uint32_t x, y;
    SDL_Rect viewport;
 
    graphics_set_title( config->map_name );
 
    memset( &viewport, '\0', sizeof( SDL_Rect ) );
 
-   isomap_render_load_textures( data_path );
+   retval = isomap_render_load_textures( data_path );
+   if( retval ) {
+      goto cleanup;
+   }
 
    viewport.w = 640;
    viewport.h = 480;

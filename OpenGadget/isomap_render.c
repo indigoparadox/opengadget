@@ -2,9 +2,10 @@
 #include "isomap_render.h"
 
 static SDL_Texture* isomap_render_textures[0xff];
-static SDL_Texture* isomap_render_textures_loaded = 0;
+static uint8_t isomap_render_textures_loaded = 0;
 
-void isomap_render_load_textures( bstring data_path ) {
+OG_RETVAL isomap_render_load_textures( const bstring data_path ) {
+   OG_RETVAL retval = 0;
    const char* gfx_tile_name_format = "MP%d_%02d_%d";
    bstring gfx_tile_name = NULL;
    bstring gfx_data_path = NULL;
@@ -12,15 +13,21 @@ void isomap_render_load_textures( bstring data_path ) {
    struct pak_file* gfx_data_pak = NULL;
    int i;
 
+   if( 0 != isomap_render_textures_loaded ) {
+      goto cleanup;
+   }
+
    gfx_data_path = bformat( "%s\\graphic.pak", bdata( data_path ) );
    gfx_tile_name = bfromcstr( "" );
 
    gfx_data_file = fopen( bdata( gfx_data_path ), "rb" );
    if( NULL == gfx_data_file ) {
+      retval = 1;
       goto cleanup;
    }
    gfx_data_pak = pakopener_try_open( gfx_data_file );
    if( NULL == gfx_data_pak ) {
+      retval = 1;
       goto cleanup;
    }
 
@@ -34,7 +41,15 @@ void isomap_render_load_textures( bstring data_path ) {
 
 cleanup:
 
-   return;
+   if( NULL != gfx_data_path ) {
+      bdestroy( gfx_data_path );
+   }
+
+   if( NULL != gfx_tile_name ) {
+      bdestroy( gfx_tile_name );
+   }
+
+   return retval;
 }
 
 void isomap_render_cleanup( void ) {
@@ -47,7 +62,15 @@ void isomap_render_cleanup( void ) {
    }
 }
 
-void isomap_render_draw_tile( int x, int y, uint8_t* tiles, int map_width, int map_height, SDL_Rect* viewport, ISOMAP_RENDER_ROTATE rotation ) {
+void isomap_render_draw_tile( 
+   const int x,
+   const int y,
+   const uint8_t* tiles, 
+   const int map_width, 
+   const int map_height, 
+   const SDL_Rect* viewport, 
+   const ISOMAP_RENDER_ROTATE rotation
+) {
    int x_y_index;
    int i = 0, projected_x, projected_y, tile_index;
    SDL_Texture* sprite_texture = NULL;
@@ -91,4 +114,10 @@ void isomap_render_draw_tile( int x, int y, uint8_t* tiles, int map_width, int m
 cleanup:
 
    return;
+}
+
+uint8_t isomap_render_select_tile( const int x, const int y, const uint8_t* tiles ) {
+   uint8_t tile_index_out = 0;
+
+   return tile_index_out;
 }

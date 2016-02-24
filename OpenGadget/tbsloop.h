@@ -15,6 +15,6 @@ struct tbsloop_config {
    bstring map_name;
 };
 
-RETVAL tbsloop_loop( struct tbsloop_config* config );
+OG_RETVAL tbsloop_loop( struct tbsloop_config* config );
 
 #endif /* TBSLOOP_H */
