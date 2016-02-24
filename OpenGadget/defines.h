@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 #include <SDL_log.h>
+#include <assert.h>
 
 #include "dep/bstrlib.h"
 

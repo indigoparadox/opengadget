@@ -44,6 +44,8 @@ struct isomap {
    uint8_t* tiles;
 };
 
+#define isomap_get_tile( x, y, map_height ) ((x) * (map_height)) + (y)
+
 struct isomap* isomap_load_map( uint8_t* map_data, uint32_t map_data_len );
 
 #endif /* ISOMAP_H */
