@@ -17,8 +17,21 @@ typedef enum {
    bassignformat( gfx_tile_name, gfx_tile_name_format, 1, terrain_id, 0 ); \
    isomap_render_textures[terrain_id] = graphics_image_load( gfx_tile_name, gfx_data_pak );
 
-void isomap_render_load_textures( bstring data_path );
+OG_RETVAL isomap_render_load_textures( const bstring data_path );
 void isomap_render_cleanup( void );
-void isomap_render_draw_tile( uint8_t* tiles, int map_width, int map_height, SDL_Rect* viewport, ISOMAP_RENDER_ROTATE rotation );
+void isomap_render_draw_tile(
+   const int x,
+   const int y,
+   const uint8_t* tiles,
+   const int map_width,
+   const int map_height,
+   const SDL_Rect* viewport,
+   const ISOMAP_RENDER_ROTATE rotation
+);
+uint8_t isomap_render_select_tile(
+   const int x,
+   const int y,
+   const uint8_t* tiles
+);
 
 #endif /* ISOMAP_RENDER_H */

@@ -42,15 +42,15 @@ struct pak_file* pakopener_try_open( FILE* file ) {
    uint16_t version;
    int entry_size;
    uint32_t index_offset_raw;
-   int64_t index_offset;
-   int64_t index_offset_max;
+   long index_offset;
+   long index_offset_max;
    unsigned int index_size;
-   int64_t data_offset = 0x10;
+   long data_offset = 0x10;
    struct pak_file* file_out = NULL;
    int failure = 0;
    int i;
    int32_t count_raw;
-   uint64_t file_out_len;
+   size_t file_out_len;
 
    /* Get the filesize and make sure we start at the beginning. */
    fseek( file, 0, SEEK_END );
@@ -182,14 +182,13 @@ cleanup:
 }
 
 // public override Stream OpenEntry( ArcFile arc, Entry entry )
-uint8_t* pakopener_open_entry( struct pak_file* pak, struct pak_entry* entry ) {
+uint8_t* pakopener_open_entry( const struct pak_file* pak, const struct pak_entry* entry ) {
    //var input = arc.File.CreateStream (entry.Offset, entry.Size);
 
    uint8_t* unpacked = NULL;
    uint8_t* packed = NULL;
    int failure = 0;
-   int dest_size;
-   int i;
+   uint32_t i;
 
    packed = calloc( entry->size, sizeof( char ) );
    if( NULL == packed ) {
@@ -534,7 +533,7 @@ uint8_t* mariel_unpack( uint8_t* input, uint32_t dest_size ) {
    uint8_t* dest = NULL;
    int failure = 0;
    int offset = 0;
-   int count = 0;
+   uint32_t count = 0;
 
    dest = calloc( sizeof( uint8_t ), dest_size );
    if( NULL == dest ) {
