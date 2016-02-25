@@ -36,6 +36,9 @@
     <ClCompile Include="isomap_render.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="units.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dep\arckogako.h">
@@ -60,6 +63,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="isomap_render.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="units.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
