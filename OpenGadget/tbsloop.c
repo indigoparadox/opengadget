@@ -8,7 +8,7 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
    int i = 0;
    int j, k, j_max, k_max, x_iter, y_iter;
    SDL_Rect viewport;
-   ISOMAP_RENDER_ROTATE rotation = ISOMAP_RENDER_ROTATE_90;
+   ISOMAP_RENDER_ROTATE rotation = ISOMAP_RENDER_ROTATE_0;
    SDL_Event event;
 
    graphics_set_title( config->map_name );
@@ -38,37 +38,6 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
 
    }
 
-   graphics_clear();
-   //SDL_RenderCopy()
-
-   for( j = 0 ; j_max > j ; j++ ) {
-      for( k = 0 ; k_max > k ; k++ ) {
-         switch( rotation ) {
-            case ISOMAP_RENDER_ROTATE_0:
-               x_iter = j;
-               y_iter = k;
-               break;
-
-            case ISOMAP_RENDER_ROTATE_90:
-               x_iter = k;
-               y_iter = j;
-               break;
-
-         }
-
-         isomap_render_draw_tile(
-            x_iter, y_iter,
-            config->map->tiles,
-            config->map->width,
-            config->map->height,
-            &viewport,
-            rotation
-         );
-      }
-   }
-
-   graphics_end_draw();
-
    while( 1 ) {
 
       while( SDL_PollEvent( &event ) ) {
@@ -79,15 +48,64 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
 
       }
 
+      graphics_clear();
+      //SDL_RenderCopy()
+
+#if 0
+      for( x_iter = 0 ; config->map->width > x_iter ; x_iter++ ) {
+         for( y_iter = 0 ; config->map->height > y_iter ; y_iter++ ) {
+            /*
+            switch( rotation ) {
+               case ISOMAP_RENDER_ROTATE_0:
+                  x_iter = j;
+                  y_iter = k;
+                  break;
+
+               case ISOMAP_RENDER_ROTATE_90:
+                  x_iter = k;
+                  y_iter = j;
+                  break;
+
+            }
+            */
+                  //x_iter = j;
+                  //y_iter = k;
+
+            isomap_render_draw_tile(
+               &(config->map->tiles[isomap_get_tile( x_iter, y_iter, config->map )]),
+               &viewport,
+               rotation
+            );
+
+            //if(  )
+         }
+      }
       for( i = 0 ; config->map->units_count > i ; i++ ) {
          isomap_render_draw_unit(
             &(config->map->units[i]),
             0,
-            config->map->width,
-            config->map->height,
             &viewport,
             rotation
          );
+      }
+#endif
+
+      if( ISOMAP_RENDER_ROTATE_0 == rotation || ISOMAP_RENDER_ROTATE_270 == rotation ) {
+         for( i = config->map->tiles_count - 1 ; 0 <= i ; i-- ) {
+            isomap_render_draw_tile(
+               &(config->map->tiles[i]),
+               &viewport,
+               rotation
+               );
+         }
+      } else {
+         for( i = 0 ; config->map->tiles_count > i ; i++ ) {
+            isomap_render_draw_tile(
+               &(config->map->tiles[i]),
+               &viewport,
+               rotation
+               );
+         }
       }
 
       graphics_end_draw();

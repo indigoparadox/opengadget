@@ -44,16 +44,26 @@ typedef enum {
       } \
    }
 
+struct isomap_tile {
+   int index;
+   uint8_t terrain;
+   uint32_t x;
+   uint32_t y;
+   struct units_unit* unit;
+   struct isomap* map;
+};
+
 struct isomap {
    uint32_t width;
    uint32_t height;
    uint8_t weather;
    struct units_unit* units;
    int units_count;
-   uint8_t* tiles;
+   struct isomap_tile* tiles;
+   uint32_t tiles_count;
 };
 
-#define isomap_get_tile( x, y, map_height ) ((x) * (map_height)) + (y)
+#define isomap_get_tile( x, y, map ) ((x) * (map->width)) + (y)
 
 struct isomap* isomap_load_map( uint8_t* map_data, uint32_t map_data_len );
 
