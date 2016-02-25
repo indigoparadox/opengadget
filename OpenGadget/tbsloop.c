@@ -69,9 +69,6 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
 
       if( ISOMAP_RENDER_ROTATE_0 == rotation || ISOMAP_RENDER_ROTATE_270 == rotation ) {
          for( i = config->map->tiles_count - 1 ; 0 <= i ; i-- ) {
-            if( NULL != config->map->tiles[i].unit ) {
-               continue;
-            }
             isomap_render_draw_tile(
                &(config->map->tiles[i]),
                &viewport,
@@ -80,9 +77,6 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
          }
       } else {
          for( i = 0 ; config->map->tiles_count > i ; i++ ) {
-            if( NULL != config->map->tiles[i].unit ) {
-               continue;
-            }
             isomap_render_draw_tile(
                &(config->map->tiles[i]),
                &viewport,
