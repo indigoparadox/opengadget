@@ -9,6 +9,7 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
    int j, k, j_max, k_max, x_iter, y_iter;
    SDL_Rect viewport;
    ISOMAP_RENDER_ROTATE rotation = ISOMAP_RENDER_ROTATE_90;
+   SDL_Event event;
 
    graphics_set_title( config->map_name );
 
@@ -68,7 +69,15 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
 
    graphics_end_draw();
 
-   for( i = 0 ; 10000 > i ; i++ ) {
+   while( 1 ) {
+
+      while( SDL_PollEvent( &event ) ) {
+         switch( event.type ) {
+            case SDL_QUIT:
+               goto cleanup;
+         }
+
+      }
 
       graphics_end_draw();
 
