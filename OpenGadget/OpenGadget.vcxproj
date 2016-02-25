@@ -156,6 +156,7 @@
     <ClCompile Include="isomap_render.c" />
     <ClCompile Include="opengadget.c" />
     <ClCompile Include="tbsloop.c" />
+    <ClCompile Include="units.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="defines.h" />
@@ -166,6 +167,7 @@
     <ClInclude Include="isomap_render.h" />
     <ClInclude Include="isomap_terrain.h" />
     <ClInclude Include="tbsloop.h" />
+    <ClInclude Include="units.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
