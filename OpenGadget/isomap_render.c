@@ -238,18 +238,8 @@ void isomap_render_draw_unit(
    SDL_Texture* sprite_texture = NULL;
    struct isomap_render_texture texture_selection;
 
-#if 0
-   if( ISOMAP_RENDER_ROTATE_90 == rotation || ISOMAP_RENDER_ROTATE_180 == rotation ) {
-      x = unit->tile->map->width - unit->tile->x - 1;
-      y = unit->tile->y - 1;
-   }else{
-      x = unit->tile->map->width - unit->tile->x - 1;
-      y = unit->tile->map->height - unit->tile->y - 1;
-   }
-#endif
-
-   x = unit->tile->y;
-   y = unit->tile->x;
+   x = unit->tile->x;
+   y = unit->tile->y;
 
    texture_selection.texture_index = unit->type;
 
@@ -258,32 +248,19 @@ void isomap_render_draw_unit(
    texture_selection.sprite_rect.y = 0;
    //   floor( (sides_sum / GRAPHICS_TILES_X_COUNT) ) * GRAPHICS_TILE_HEIGHT;
 
-   //isomap_render_tile_rotate( x, y, unit->tile->map->width, unit->tile->map->height, i, rotation );
+   isomap_render_tile_rotate( x, y, unit->tile->map->width, unit->tile->map->height, i, rotation );
 
    sprite_texture = isomap_render_unit_textures[texture_selection.texture_index];
    if( NULL == sprite_texture ) {
       goto cleanup;
    }
 
-   switch( rotation ) {
-      case ISOMAP_RENDER_ROTATE_90:
-         i = y;
-         y = x;
-         x = unit->tile->map->width - (i - 1);
-         break;
-
-      case ISOMAP_RENDER_ROTATE_180:
-         x = unit->tile->map->width - (x - 1);
-         y = unit->tile->map->height - (y + 1);
-         break;
-   }
-
    graphics_draw_tile(
       sprite_texture,
       texture_selection.sprite_rect.x,
       texture_selection.sprite_rect.y,
-      viewport->x + (y * GRAPHICS_TILE_WIDTH / 2) + (x * GRAPHICS_TILE_WIDTH / 2),
-      viewport->y + ((x * GRAPHICS_TILE_OFFSET_X / 2) - (y * GRAPHICS_TILE_OFFSET_X / 2))
+      viewport->x + (x * GRAPHICS_TILE_WIDTH / 2) + (y * GRAPHICS_TILE_WIDTH / 2),
+      viewport->y + ((y * GRAPHICS_TILE_OFFSET_X / 2) - (x * GRAPHICS_TILE_OFFSET_X / 2))
    );
 
 cleanup:
