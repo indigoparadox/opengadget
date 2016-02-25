@@ -81,39 +81,40 @@ static void isomap_render_select_tile(
    struct isomap_tile* current_tile;
    struct isomap_tile* test_tile;
    //int tiles_count = map_width * map_height;
+   uint32_t current_x = tile->x;
+   uint32_t current_y = tile->map->width - tile->y - 1;
 
    texture_selection->texture_index = tile->terrain;
    current_tile = tile;
 
    /* Above */
-   test_tile = &(tile->map->tiles[isomap_get_tile( tile->x, tile->y + 1, tile->map )]);
+   test_tile = &(tile->map->tiles[isomap_get_tile( current_x + 1, current_y, tile->map )]);
    if( isomap_render_adjacent( current_tile, test_tile ) ) {
       sides_sum += 1;
    }
 
    /* Left */
-   test_tile = &(tile->map->tiles[isomap_get_tile( tile->x - 1, tile->y, tile->map )]);
+   test_tile = &(tile->map->tiles[isomap_get_tile( current_x, current_y - 1, tile->map )]);
    if( isomap_render_adjacent( current_tile, test_tile ) ) {
-      sides_sum += 8;
+      sides_sum += 2;
    }
 
    /* Below */
-   test_tile = &(tile->map->tiles[isomap_get_tile( tile->x, tile->y - 1, tile->map )]);
+   test_tile = &(tile->map->tiles[isomap_get_tile( current_x - 1, current_y, tile->map )]);
    if( isomap_render_adjacent( current_tile, test_tile ) ) {
       sides_sum += 4;
    }
 
    /* Right */
-   test_tile = &(tile->map->tiles[isomap_get_tile( tile->x + 1, tile->y, tile->map )]);
+   test_tile = &(tile->map->tiles[isomap_get_tile( current_x, current_y + 1, tile->map )]);
    if( isomap_render_adjacent( current_tile, test_tile ) ) {
-      sides_sum += 2;
+      sides_sum += 8;
    }
 
    /* Translate the side sums for the current rotation. Maybe there are       *
     * better ways to do this, but we can find them some other time.           */
    switch( rotation ) {
       case ISOMAP_RENDER_ROTATE_270:
-      case ISOMAP_RENDER_ROTATE_90:
          test_sum = sides_sum & ISOMAP_RENDER_BITWISE_UP;
          if( 0 != test_sum ) {
             temp_sum += ISOMAP_RENDER_BITWISE_RIGHT; }
@@ -126,6 +127,47 @@ static void isomap_render_select_tile(
          test_sum = sides_sum & ISOMAP_RENDER_BITWISE_RIGHT;
          if( 0 != test_sum ) {
             temp_sum += ISOMAP_RENDER_BITWISE_DOWN; }
+         sides_sum = temp_sum;
+         break;
+
+      case ISOMAP_RENDER_ROTATE_180:
+         test_sum = sides_sum & ISOMAP_RENDER_BITWISE_UP;
+         if( 0 != test_sum ) {
+            temp_sum += ISOMAP_RENDER_BITWISE_DOWN;
+         }
+         test_sum = sides_sum & ISOMAP_RENDER_BITWISE_LEFT;
+         if( 0 != test_sum ) {
+            temp_sum += ISOMAP_RENDER_BITWISE_RIGHT;
+         }
+         test_sum = sides_sum & ISOMAP_RENDER_BITWISE_DOWN;
+         if( 0 != test_sum ) {
+            temp_sum += ISOMAP_RENDER_BITWISE_UP;
+         }
+         test_sum = sides_sum & ISOMAP_RENDER_BITWISE_RIGHT;
+         if( 0 != test_sum ) {
+            temp_sum += ISOMAP_RENDER_BITWISE_LEFT;
+         }
+         sides_sum = temp_sum;
+         break;
+
+
+      case ISOMAP_RENDER_ROTATE_90:
+         test_sum = sides_sum & ISOMAP_RENDER_BITWISE_UP;
+         if( 0 != test_sum ) {
+            temp_sum += ISOMAP_RENDER_BITWISE_LEFT;
+         }
+         test_sum = sides_sum & ISOMAP_RENDER_BITWISE_LEFT;
+         if( 0 != test_sum ) {
+            temp_sum += ISOMAP_RENDER_BITWISE_DOWN;
+         }
+         test_sum = sides_sum & ISOMAP_RENDER_BITWISE_DOWN;
+         if( 0 != test_sum ) {
+            temp_sum += ISOMAP_RENDER_BITWISE_RIGHT;
+         }
+         test_sum = sides_sum & ISOMAP_RENDER_BITWISE_RIGHT;
+         if( 0 != test_sum ) {
+            temp_sum += ISOMAP_RENDER_BITWISE_UP;
+         }
          sides_sum = temp_sum;
          break;
    }
@@ -159,25 +201,12 @@ void isomap_render_draw_tile(
    int i = 0;
    uint32_t draw_x = tile->x;
    uint32_t draw_y = tile->y;
-   uint32_t draw_tile_w = GRAPHICS_TILE_WIDTH;
-   uint32_t draw_tile_o = GRAPHICS_TILE_OFFSET_X;
    SDL_Texture* sprite_texture = NULL;
    struct isomap_render_texture texture_selection;
 
    isomap_render_select_tile( tile, rotation, &texture_selection );
-   /*texture_selection.texture_index = tile->terrain;
-   texture_selection.sprite_rect.x = 0;
-   texture_selection.sprite_rect.y = 0;*/
 
    isomap_render_tile_rotate( draw_x, draw_y, tile->map->width, tile->map->height, i, rotation );
-
-#if 0
-   if( ISOMAP_RENDER_ROTATE_90 == rotation || ISOMAP_RENDER_ROTATE_270 == rotation ) {
-      i = draw_tile_o;
-      draw_tile_o = draw_tile_w;
-      draw_tile_w = i;
-   }
-#endif
 
    sprite_texture = isomap_render_terrain_textures[texture_selection.texture_index];
    if( NULL == sprite_texture ) {
@@ -188,8 +217,10 @@ void isomap_render_draw_tile(
       sprite_texture,
       texture_selection.sprite_rect.x,
       texture_selection.sprite_rect.y,
-      viewport->x + (draw_x * draw_tile_w / 2) + (draw_y * draw_tile_w / 2),
-      viewport->y + ((draw_y * draw_tile_o / 2) - (draw_x * draw_tile_o / 2))
+      viewport->x + (draw_x * GRAPHICS_TILE_WIDTH / 2) + 
+         (draw_y * GRAPHICS_TILE_WIDTH / 2),
+      viewport->y + ((draw_y * GRAPHICS_TILE_OFFSET_X / 2) - 
+         (draw_x * GRAPHICS_TILE_OFFSET_X / 2))
    );
 
 cleanup:
@@ -207,8 +238,18 @@ void isomap_render_draw_unit(
    SDL_Texture* sprite_texture = NULL;
    struct isomap_render_texture texture_selection;
 
-   x = unit->tile->x;
-   y = unit->tile->y;
+#if 0
+   if( ISOMAP_RENDER_ROTATE_90 == rotation || ISOMAP_RENDER_ROTATE_180 == rotation ) {
+      x = unit->tile->map->width - unit->tile->x - 1;
+      y = unit->tile->y - 1;
+   }else{
+      x = unit->tile->map->width - unit->tile->x - 1;
+      y = unit->tile->map->height - unit->tile->y - 1;
+   }
+#endif
+
+   x = unit->tile->y;
+   y = unit->tile->x;
 
    texture_selection.texture_index = unit->type;
 
@@ -217,11 +258,24 @@ void isomap_render_draw_unit(
    texture_selection.sprite_rect.y = 0;
    //   floor( (sides_sum / GRAPHICS_TILES_X_COUNT) ) * GRAPHICS_TILE_HEIGHT;
 
-   //isomap_render_tile_rotate( x, y, map_width, map_height, i, rotation );
+   //isomap_render_tile_rotate( x, y, unit->tile->map->width, unit->tile->map->height, i, rotation );
 
    sprite_texture = isomap_render_unit_textures[texture_selection.texture_index];
    if( NULL == sprite_texture ) {
       goto cleanup;
+   }
+
+   switch( rotation ) {
+      case ISOMAP_RENDER_ROTATE_90:
+         i = y;
+         y = x;
+         x = unit->tile->map->width - (i - 1);
+         break;
+
+      case ISOMAP_RENDER_ROTATE_180:
+         x = unit->tile->map->width - (x - 1);
+         y = unit->tile->map->height - (y + 1);
+         break;
    }
 
    graphics_draw_tile(

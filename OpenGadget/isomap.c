@@ -70,11 +70,14 @@ struct isomap* isomap_load_map( uint8_t* map_data, uint32_t map_data_len ) {
       // ???
       cursor += sizeof( uint32_t );
 
+      memcpy( &y_tmp, &(map_data[cursor]), sizeof( uint32_t ) );
+      cursor += sizeof( uint32_t );
+
       memcpy( &x_tmp, &(map_data[cursor]), sizeof( uint32_t ) );
       cursor += sizeof( uint32_t );
 
-      memcpy( &y_tmp, &(map_data[cursor]), sizeof( uint32_t ) );
-      cursor += sizeof( uint32_t );
+      //x_tmp = isomap_out->width - x_tmp - 1;
+      //y_tmp = isomap_out->height - y_tmp - 1;
 
       isomap_out->tiles[isomap_get_tile( x_tmp, y_tmp, isomap_out )].unit =
          &(isomap_out->units[units_cursor]);

@@ -33,11 +33,32 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
                goto cleanup;
 
             case SDL_KEYUP:
-               if( SDLK_r == event.key.keysym.sym ) {
-                  rotation++;
-                  if( 3 < rotation ) {
-                     rotation = 0;
-                  }
+               switch( event.key.keysym.sym ) {
+                  case SDLK_r:
+                     rotation++;
+                     if( 3 < rotation ) {
+                        rotation = 0;
+                     }
+                     break;
+
+                  case SDLK_RIGHT:
+                     viewport.x += 100;
+                     break;
+
+                  case SDLK_LEFT:
+                     viewport.x -= 100;
+                     break;
+
+                  case SDLK_UP:
+                     viewport.y += 100;
+                     break;
+
+                  case SDLK_DOWN:
+                     viewport.y -= 100;
+                     break;
+
+                  case SDLK_ESCAPE:
+                     goto cleanup;
                }
                break;
          }
@@ -48,6 +69,9 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
 
       if( ISOMAP_RENDER_ROTATE_0 == rotation || ISOMAP_RENDER_ROTATE_270 == rotation ) {
          for( i = config->map->tiles_count - 1 ; 0 <= i ; i-- ) {
+            if( NULL != config->map->tiles[i].unit ) {
+               continue;
+            }
             isomap_render_draw_tile(
                &(config->map->tiles[i]),
                &viewport,
@@ -56,11 +80,25 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
          }
       } else {
          for( i = 0 ; config->map->tiles_count > i ; i++ ) {
+            if( NULL != config->map->tiles[i].unit ) {
+               continue;
+            }
             isomap_render_draw_tile(
                &(config->map->tiles[i]),
                &viewport,
                rotation
             );
+         }
+      }
+
+      for( i = 0 ; config->map->tiles_count > i ; i++ ) {
+         if( NULL != config->map->tiles[i].unit ) {
+            isomap_render_draw_unit(
+               config->map->tiles[i].unit,
+               0,
+               &viewport,
+               rotation
+               );
          }
       }
 
