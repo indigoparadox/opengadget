@@ -30,29 +30,31 @@ struct isomap_render_texture {
 
 #define isomap_render_adjacent( tile_1, tile_2 ) \
       ( \
-         tile_1 == tile_2 || \
-         ( tile_1->map->tiles_count <= tile_2->index || 0 > tile_2->index ) || \
+         tile_1->terrain == tile_2->terrain || \
          ( \
-            ISOMAP_TERRAIN_SEA == tile_1 && ( \
-               ISOMAP_TERRAIN_RIVER == tile_2 || \
-               ISOMAP_TERRAIN_BRIDGE == tile_2 || \
-               ISOMAP_TERRAIN_BEACH == tile_2 \
+            (tile_1->map->tiles + tile_1->map->tiles_count) <= tile_2 || \
+               tile_1->map->tiles > tile_2 ) || \
+         ( \
+            ISOMAP_TERRAIN_SEA == tile_1->terrain && ( \
+               ISOMAP_TERRAIN_RIVER == tile_2->terrain || \
+               ISOMAP_TERRAIN_BRIDGE == tile_2->terrain || \
+               ISOMAP_TERRAIN_BEACH == tile_2->terrain \
             ) \
          ) || ( \
-            ISOMAP_TERRAIN_RIVER == tile_1 && ( \
-               ISOMAP_TERRAIN_SEA == tile_2 || \
-               ISOMAP_TERRAIN_BRIDGE == tile_2 \
+            ISOMAP_TERRAIN_RIVER == tile_1->terrain && ( \
+               ISOMAP_TERRAIN_SEA == tile_2->terrain || \
+               ISOMAP_TERRAIN_BRIDGE == tile_2->terrain \
             ) \
          )  || ( \
-            ISOMAP_TERRAIN_BEACH == tile_1 && ( \
-               ISOMAP_TERRAIN_SEA == tile_2 \
+            ISOMAP_TERRAIN_BEACH == tile_1->terrain && ( \
+               ISOMAP_TERRAIN_SEA == tile_2->terrain \
             ) \
          ) || ( \
-            ISOMAP_TERRAIN_BRIDGE == tile_1 && ( \
-               ISOMAP_TERRAIN_PLAINS == tile_2 || \
-               ISOMAP_TERRAIN_WASTE == tile_2 || \
-               ISOMAP_TERRAIN_TREES == tile_2 || \
-               ISOMAP_TERRAIN_ROAD == tile_2 \
+            ISOMAP_TERRAIN_BRIDGE == tile_1->terrain && ( \
+               ISOMAP_TERRAIN_PLAINS == tile_2->terrain || \
+               ISOMAP_TERRAIN_WASTE == tile_2->terrain || \
+               ISOMAP_TERRAIN_TREES == tile_2->terrain || \
+               ISOMAP_TERRAIN_ROAD == tile_2->terrain \
             ) \
          ) \
       )
@@ -68,11 +70,11 @@ struct isomap_render_texture {
          break; \
       case ISOMAP_RENDER_ROTATE_180: \
          x = width - x; \
-         y = height - y - 1; \
+         y = height - y; \
          break; \
       case ISOMAP_RENDER_ROTATE_270: \
          temp = x; \
-         x = width - y - 1; \
+         x = width - y; \
          y = temp; \
          break; \
    }
