@@ -47,8 +47,10 @@ struct isomap* isomap_load_map( uint8_t* map_data, uint32_t map_data_len ) {
    memcpy( &map_portion_len, &(map_data[cursor]), sizeof( uint32_t ) );
    cursor += sizeof( uint32_t );
 
-   isomap_out->units = calloc( map_portion_len / ISOMAP_UNIT_DATA_SIZE, sizeof( struct units_unit ) );
-   for( units_cursor = 0 ; units_cursor < (map_portion_len / ISOMAP_UNIT_DATA_SIZE); units_cursor ++ ) {
+   isomap_out->units_count = map_portion_len / ISOMAP_UNIT_DATA_SIZE;
+
+   isomap_out->units = calloc( isomap_out->units_count, sizeof( struct units_unit ) );
+   for( units_cursor = 0 ; units_cursor < isomap_out->units_count; units_cursor ++ ) {
       memcpy( &(isomap_out->units[units_cursor].type), &(map_data[cursor]), sizeof( uint32_t ) );
       cursor += sizeof( uint32_t );
 
