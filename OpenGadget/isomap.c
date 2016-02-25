@@ -2,7 +2,7 @@
 #include "isomap.h"
 
 struct isomap* isomap_load_map( uint8_t* map_data, uint32_t map_data_len ) {
-   int32_t i;
+   int32_t i, j;
    int32_t cursor = -1;
    int32_t units_cursor = -1;
    uint32_t units_portion_len;
@@ -39,16 +39,19 @@ struct isomap* isomap_load_map( uint8_t* map_data, uint32_t map_data_len ) {
 
    isomap_out->tiles = calloc( isomap_out->tiles_count, sizeof( struct isomap_tile ) );
 
+   /* Load the tiles backwards so that they don't overlap when drawn by index. */
    //memcpy( isomap_out->tiles, &(map_data[cursor]), map_portion_len );
-   for( i = 0 ; isomap_out->tiles_count > i ; i++ ) {
-      isomap_out->tiles[i].terrain = map_data[cursor++];
-      isomap_out->tiles[i].x = (i / isomap_out->width);
-      isomap_out->tiles[i].y = (i % isomap_out->width);
-      isomap_out->tiles[i].map = isomap_out;
-      isomap_out->tiles[i].index = i;
+   int index = 0;
+   for( i = 0 ; isomap_out->height > i ; i ++ ) {
+      for( j = isomap_out->width - 1 ; 0 <= j ; j-- ) {
+         isomap_out->tiles[index].terrain = map_data[cursor++];
+         isomap_out->tiles[index].x = i; //(j / isomap_out->width);
+         isomap_out->tiles[index].y = j; //(j % isomap_out->width);
+         isomap_out->tiles[index].map = isomap_out;
+         isomap_out->tiles[index].index = index;
+         index++;
+      }
    }
-
-   struct isomap_tile* z = &(isomap_out->tiles[isomap_get_tile( 5, 7, isomap_out )]);
 
    /* Parse the units. */
    isomap_find_section( "MAPU", map_data, map_data_len );

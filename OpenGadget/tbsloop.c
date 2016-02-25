@@ -25,70 +25,26 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
    viewport.x = 0;
    viewport.y = 200;
 
-   switch( rotation ) {
-      case ISOMAP_RENDER_ROTATE_0:
-         j_max = config->map->width;
-         k_max = config->map->height;
-         break;
-
-      case ISOMAP_RENDER_ROTATE_90:
-         k_max = config->map->width;
-         j_max = config->map->height;
-         break;
-
-   }
-
    while( 1 ) {
 
       while( SDL_PollEvent( &event ) ) {
          switch( event.type ) {
             case SDL_QUIT:
                goto cleanup;
+
+            case SDL_KEYUP:
+               if( SDLK_r == event.key.keysym.sym ) {
+                  rotation++;
+                  if( 3 < rotation ) {
+                     rotation = 0;
+                  }
+               }
+               break;
          }
 
       }
 
       graphics_clear();
-      //SDL_RenderCopy()
-
-#if 0
-      for( x_iter = 0 ; config->map->width > x_iter ; x_iter++ ) {
-         for( y_iter = 0 ; config->map->height > y_iter ; y_iter++ ) {
-            /*
-            switch( rotation ) {
-               case ISOMAP_RENDER_ROTATE_0:
-                  x_iter = j;
-                  y_iter = k;
-                  break;
-
-               case ISOMAP_RENDER_ROTATE_90:
-                  x_iter = k;
-                  y_iter = j;
-                  break;
-
-            }
-            */
-                  //x_iter = j;
-                  //y_iter = k;
-
-            isomap_render_draw_tile(
-               &(config->map->tiles[isomap_get_tile( x_iter, y_iter, config->map )]),
-               &viewport,
-               rotation
-            );
-
-            //if(  )
-         }
-      }
-      for( i = 0 ; config->map->units_count > i ; i++ ) {
-         isomap_render_draw_unit(
-            &(config->map->units[i]),
-            0,
-            &viewport,
-            rotation
-         );
-      }
-#endif
 
       if( ISOMAP_RENDER_ROTATE_0 == rotation || ISOMAP_RENDER_ROTATE_270 == rotation ) {
          for( i = config->map->tiles_count - 1 ; 0 <= i ; i-- ) {
@@ -96,7 +52,7 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
                &(config->map->tiles[i]),
                &viewport,
                rotation
-               );
+            );
          }
       } else {
          for( i = 0 ; config->map->tiles_count > i ; i++ ) {
@@ -104,7 +60,7 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
                &(config->map->tiles[i]),
                &viewport,
                rotation
-               );
+            );
          }
       }
 

@@ -71,7 +71,7 @@ void isomap_render_cleanup( void ) {
 }
 
 static void isomap_render_select_tile(
-   struct isomap_tile* tile,
+   const struct isomap_tile* tile,
    const ISOMAP_RENDER_ROTATE rotation,
    struct isomap_render_texture* texture_selection
 ) {
@@ -112,6 +112,7 @@ static void isomap_render_select_tile(
    /* Translate the side sums for the current rotation. Maybe there are       *
     * better ways to do this, but we can find them some other time.           */
    switch( rotation ) {
+      case ISOMAP_RENDER_ROTATE_270:
       case ISOMAP_RENDER_ROTATE_90:
          test_sum = sides_sum & ISOMAP_RENDER_BITWISE_UP;
          if( 0 != test_sum ) {
@@ -151,13 +152,15 @@ static void isomap_render_select_tile(
 }
 
 void isomap_render_draw_tile(
-   struct isomap_tile* tile,
+   const struct isomap_tile* tile,
    const SDL_Rect* viewport, 
    const ISOMAP_RENDER_ROTATE rotation
 ) {
    int i = 0;
    uint32_t draw_x = tile->x;
    uint32_t draw_y = tile->y;
+   uint32_t draw_tile_w = GRAPHICS_TILE_WIDTH;
+   uint32_t draw_tile_o = GRAPHICS_TILE_OFFSET_X;
    SDL_Texture* sprite_texture = NULL;
    struct isomap_render_texture texture_selection;
 
@@ -166,7 +169,15 @@ void isomap_render_draw_tile(
    texture_selection.sprite_rect.x = 0;
    texture_selection.sprite_rect.y = 0;*/
 
-   //isomap_render_tile_rotate( draw_x, draw_y, tile->map->width, tile->map->height, i, rotation );
+   isomap_render_tile_rotate( draw_x, draw_y, tile->map->width, tile->map->height, i, rotation );
+
+#if 0
+   if( ISOMAP_RENDER_ROTATE_90 == rotation || ISOMAP_RENDER_ROTATE_270 == rotation ) {
+      i = draw_tile_o;
+      draw_tile_o = draw_tile_w;
+      draw_tile_w = i;
+   }
+#endif
 
    sprite_texture = isomap_render_terrain_textures[texture_selection.texture_index];
    if( NULL == sprite_texture ) {
@@ -177,8 +188,8 @@ void isomap_render_draw_tile(
       sprite_texture,
       texture_selection.sprite_rect.x,
       texture_selection.sprite_rect.y,
-      viewport->x + (draw_x * GRAPHICS_TILE_WIDTH / 2) + (draw_y * GRAPHICS_TILE_WIDTH / 2),
-      viewport->y + ((draw_y * GRAPHICS_TILE_OFFSET_X / 2) - (draw_x * GRAPHICS_TILE_OFFSET_X / 2))
+      viewport->x + (draw_x * draw_tile_w / 2) + (draw_y * draw_tile_w / 2),
+      viewport->y + ((draw_y * draw_tile_o / 2) - (draw_x * draw_tile_o / 2))
    );
 
 cleanup:
