@@ -1,12 +1,14 @@
 
 #include "isomap_render.h"
 
-static SDL_Texture* isomap_render_textures[0xff];
+static SDL_Texture* isomap_render_terrain_textures[0xff];
+static SDL_Texture* isomap_render_unit_textures[0xff];
 static uint8_t isomap_render_textures_loaded = 0;
 
 OG_RETVAL isomap_render_load_textures( const bstring data_path ) {
    OG_RETVAL retval = 0;
-   const char* gfx_tile_name_format = "MP%d_%02d_%d";
+   const char* gfx_terrain_name_format = "MP%d_%02d_%d";
+   const char* gfx_unit_name_format = "MU0%d00";
    bstring gfx_tile_name = NULL;
    bstring gfx_data_path = NULL;
    FILE* gfx_data_file = NULL;
@@ -31,10 +33,14 @@ OG_RETVAL isomap_render_load_textures( const bstring data_path ) {
       goto cleanup;
    }
 
-   memset( isomap_render_textures, '\0', 0xFF * sizeof( SDL_Texture* ) );
+   memset( isomap_render_terrain_textures, '\0', 0xFF * sizeof( SDL_Texture* ) );
 
    for( i = 0 ; ISOMAP_TERRAIN_HQ > i ; i++ ) {
-      isomap_render_load_texture( i );
+      isomap_render_load_texture( i, gfx_terrain_name_format, isomap_render_terrain_textures );
+   }
+
+   for( i = 0 ; 20 > i ; i++ ) {
+      isomap_render_load_texture( i, gfx_unit_name_format, isomap_render_unit_textures );
    }
 
    isomap_render_textures_loaded = 1;
@@ -56,8 +62,8 @@ void isomap_render_cleanup( void ) {
    int i;
 
    for( i = 0; 0xFF > i; i++ ) {
-      if( NULL != isomap_render_textures[i] ) {
-         SDL_DestroyTexture( isomap_render_textures[i] );
+      if( NULL != isomap_render_terrain_textures[i] ) {
+         SDL_DestroyTexture( isomap_render_terrain_textures[i] );
       }
    }
 }
@@ -165,7 +171,7 @@ void isomap_render_draw_tile(
 
    isomap_render_tile_rotate( x, y, map_width, map_height, i, rotation );
 
-   sprite_texture = isomap_render_textures[texture_selection.texture_index];
+   sprite_texture = isomap_render_terrain_textures[texture_selection.texture_index];
    if( NULL == sprite_texture ) {
       goto cleanup;
    }
@@ -181,4 +187,16 @@ void isomap_render_draw_tile(
 cleanup:
 
    return;
+}
+
+void isomap_render_draw_unit(
+   int x,
+   int y,
+   const struct units_unit* unit,
+   const uint8_t ani_frame,
+   int map_width,
+   int map_height,
+   const SDL_Rect* viewport,
+   const ISOMAP_RENDER_ROTATE rotation
+) {
 }
