@@ -28,10 +28,6 @@ struct isomap_render_texture {
    SDL_Rect sprite_rect;
 };
 
-#define isomap_render_load_texture( terrain_id, format_string, texture_array ) \
-   bassignformat( gfx_tile_name, format_string, 1, terrain_id, 0 ); \
-   texture_array[terrain_id] = graphics_image_load( gfx_tile_name, gfx_data_pak );
-
 #define isomap_render_adjacent( tile_1, tile_2, tile_index, tiles_count ) \
       ( \
          tile_1 == tile_2 || \
@@ -93,8 +89,6 @@ void isomap_render_draw_tile(
    const ISOMAP_RENDER_ROTATE rotation
 );
 void isomap_render_draw_unit(
-   int x,
-   int y,
    const struct units_unit* unit,
    const uint8_t ani_frame,
    int map_width,

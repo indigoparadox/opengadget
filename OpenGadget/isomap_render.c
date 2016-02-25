@@ -8,7 +8,7 @@ static uint8_t isomap_render_textures_loaded = 0;
 OG_RETVAL isomap_render_load_textures( const bstring data_path ) {
    OG_RETVAL retval = 0;
    const char* gfx_terrain_name_format = "MP%d_%02d_%d";
-   const char* gfx_unit_name_format = "MU0%d00";
+   const char* gfx_unit_name_format = "MU_0%02d00";
    bstring gfx_tile_name = NULL;
    bstring gfx_data_path = NULL;
    FILE* gfx_data_file = NULL;
@@ -36,11 +36,13 @@ OG_RETVAL isomap_render_load_textures( const bstring data_path ) {
    memset( isomap_render_terrain_textures, '\0', 0xFF * sizeof( SDL_Texture* ) );
 
    for( i = 0 ; ISOMAP_TERRAIN_HQ > i ; i++ ) {
-      isomap_render_load_texture( i, gfx_terrain_name_format, isomap_render_terrain_textures );
+      bassignformat( gfx_tile_name, gfx_terrain_name_format, 1, i, 0 );
+      isomap_render_terrain_textures[i] = graphics_image_load( gfx_tile_name, gfx_data_pak );
    }
 
    for( i = 0 ; 20 > i ; i++ ) {
-      isomap_render_load_texture( i, gfx_unit_name_format, isomap_render_unit_textures );
+      bassignformat( gfx_tile_name, gfx_unit_name_format, i );
+      isomap_render_unit_textures[i] = graphics_image_load( gfx_tile_name, gfx_data_pak );
    }
 
    isomap_render_textures_loaded = 1;
@@ -190,8 +192,6 @@ cleanup:
 }
 
 void isomap_render_draw_unit(
-   int x,
-   int y,
    const struct units_unit* unit,
    const uint8_t ani_frame,
    int map_width,
@@ -199,4 +199,36 @@ void isomap_render_draw_unit(
    const SDL_Rect* viewport,
    const ISOMAP_RENDER_ROTATE rotation
 ) {
+   int i = 0, x, y;
+   SDL_Texture* sprite_texture = NULL;
+   struct isomap_render_texture texture_selection;
+
+   x = unit->x;
+   y = unit->y;
+
+   texture_selection.texture_index = unit->type;
+
+   texture_selection.sprite_rect.x = 0;
+   //   (sides_sum % GRAPHICS_TILES_X_COUNT) * GRAPHICS_TILE_WIDTH;
+   texture_selection.sprite_rect.y = 0;
+   //   floor( (sides_sum / GRAPHICS_TILES_X_COUNT) ) * GRAPHICS_TILE_HEIGHT;
+
+   //isomap_render_tile_rotate( x, y, map_width, map_height, i, rotation );
+
+   sprite_texture = isomap_render_unit_textures[texture_selection.texture_index];
+   if( NULL == sprite_texture ) {
+      goto cleanup;
+   }
+
+   graphics_draw_tile(
+      sprite_texture,
+      texture_selection.sprite_rect.x,
+      texture_selection.sprite_rect.y,
+      viewport->x + (y * GRAPHICS_TILE_WIDTH / 2) + (x * GRAPHICS_TILE_WIDTH / 2),
+      viewport->y + ((x * GRAPHICS_TILE_OFFSET_X / 2) - (y * GRAPHICS_TILE_OFFSET_X / 2))
+   );
+
+cleanup:
+
+   return;
 }
