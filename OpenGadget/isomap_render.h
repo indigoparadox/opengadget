@@ -63,11 +63,11 @@ struct isomap_render_texture {
    switch( rotation ) { \
       case ISOMAP_RENDER_ROTATE_90: \
          temp = y; \
-         y = height - x - 1; \
+         y = height - x; \
          x = temp; \
          break; \
       case ISOMAP_RENDER_ROTATE_180: \
-         x = width - x - 1; \
+         x = width - x; \
          y = height - y - 1; \
          break; \
       case ISOMAP_RENDER_ROTATE_270: \
