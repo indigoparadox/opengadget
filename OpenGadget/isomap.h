@@ -49,6 +49,7 @@ struct isomap {
    uint32_t height;
    uint8_t weather;
    struct units_unit* units;
+   int units_count;
    uint8_t* tiles;
 };
 
