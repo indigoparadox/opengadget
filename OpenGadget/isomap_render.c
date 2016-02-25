@@ -71,45 +71,41 @@ void isomap_render_cleanup( void ) {
 }
 
 static void isomap_render_select_tile(
-   int x,
-   int y,
-   const uint8_t* tiles,
-   int map_width,
-   int map_height,
+   struct isomap_tile* tile,
    const ISOMAP_RENDER_ROTATE rotation,
    struct isomap_render_texture* texture_selection
 ) {
    ISOMAP_RENDER_BITWISE sides_sum = 0;
    ISOMAP_RENDER_BITWISE test_sum = 0;
    ISOMAP_RENDER_BITWISE temp_sum = 0;
-   uint8_t current_tile;
-   uint8_t test_tile;
-   int tiles_count = map_width * map_height;
+   struct isomap_tile* current_tile;
+   struct isomap_tile* test_tile;
+   //int tiles_count = map_width * map_height;
 
-   texture_selection->texture_index = tiles[isomap_get_tile( x, y, map_height )];
-   current_tile = tiles[isomap_get_tile( x, y, map_height )];
+   texture_selection->texture_index = tile->terrain;
+   current_tile = tile;
 
    /* Above */
-   test_tile = tiles[isomap_get_tile( x, y + 1, map_height )];
-   if( isomap_render_adjacent( current_tile, test_tile, isomap_get_tile( x, y + 1, map_height ), tiles_count ) ) {
+   test_tile = &(tile->map->tiles[isomap_get_tile( tile->x, tile->y + 1, tile->map )]);
+   if( isomap_render_adjacent( current_tile, test_tile ) ) {
       sides_sum += 1;
    }
 
    /* Left */
-   test_tile = tiles[isomap_get_tile( x - 1, y, map_height )];
-   if( isomap_render_adjacent( current_tile, test_tile, isomap_get_tile( x - 1, y, map_height ), tiles_count ) ) {
+   test_tile = &(tile->map->tiles[isomap_get_tile( tile->x - 1, tile->y, tile->map )]);
+   if( isomap_render_adjacent( current_tile, test_tile ) ) {
       sides_sum += 8;
    }
 
    /* Below */
-   test_tile = tiles[isomap_get_tile( x, y - 1, map_height )];
-   if( isomap_render_adjacent( current_tile, test_tile, isomap_get_tile( x, y - 1, map_height ), tiles_count ) ) {
+   test_tile = &(tile->map->tiles[isomap_get_tile( tile->x, tile->y - 1, tile->map )]);
+   if( isomap_render_adjacent( current_tile, test_tile ) ) {
       sides_sum += 4;
    }
 
    /* Right */
-   test_tile = tiles[isomap_get_tile( x + 1, y, map_height )];
-   if( isomap_render_adjacent( current_tile, test_tile, isomap_get_tile( x + 1, y, map_height ), tiles_count ) ) {
+   test_tile = &(tile->map->tiles[isomap_get_tile( tile->x + 1, tile->y, tile->map )]);
+   if( isomap_render_adjacent( current_tile, test_tile ) ) {
       sides_sum += 2;
    }
 
@@ -154,24 +150,23 @@ static void isomap_render_select_tile(
 #endif /* DEBUG */
 }
 
-void isomap_render_draw_tile( 
-   int x,
-   int y,
-   const uint8_t* tiles, 
-   int map_width, 
-   int map_height, 
+void isomap_render_draw_tile(
+   struct isomap_tile* tile,
    const SDL_Rect* viewport, 
    const ISOMAP_RENDER_ROTATE rotation
 ) {
    int i = 0;
+   uint32_t draw_x = tile->x;
+   uint32_t draw_y = tile->y;
    SDL_Texture* sprite_texture = NULL;
    struct isomap_render_texture texture_selection;
 
-   isomap_render_select_tile(
-      x, y, tiles, map_width, map_height, rotation, &texture_selection
-   );
+   isomap_render_select_tile( tile, rotation, &texture_selection );
+   /*texture_selection.texture_index = tile->terrain;
+   texture_selection.sprite_rect.x = 0;
+   texture_selection.sprite_rect.y = 0;*/
 
-   isomap_render_tile_rotate( x, y, map_width, map_height, i, rotation );
+   //isomap_render_tile_rotate( draw_x, draw_y, tile->map->width, tile->map->height, i, rotation );
 
    sprite_texture = isomap_render_terrain_textures[texture_selection.texture_index];
    if( NULL == sprite_texture ) {
@@ -182,8 +177,8 @@ void isomap_render_draw_tile(
       sprite_texture,
       texture_selection.sprite_rect.x,
       texture_selection.sprite_rect.y,
-      viewport->x + (y * GRAPHICS_TILE_WIDTH / 2) + (x * GRAPHICS_TILE_WIDTH / 2),
-      viewport->y + ((x * GRAPHICS_TILE_OFFSET_X / 2) - (y * GRAPHICS_TILE_OFFSET_X / 2))
+      viewport->x + (draw_x * GRAPHICS_TILE_WIDTH / 2) + (draw_y * GRAPHICS_TILE_WIDTH / 2),
+      viewport->y + ((draw_y * GRAPHICS_TILE_OFFSET_X / 2) - (draw_x * GRAPHICS_TILE_OFFSET_X / 2))
    );
 
 cleanup:
@@ -194,8 +189,6 @@ cleanup:
 void isomap_render_draw_unit(
    const struct units_unit* unit,
    const uint8_t ani_frame,
-   int map_width,
-   int map_height,
    const SDL_Rect* viewport,
    const ISOMAP_RENDER_ROTATE rotation
 ) {
@@ -203,8 +196,8 @@ void isomap_render_draw_unit(
    SDL_Texture* sprite_texture = NULL;
    struct isomap_render_texture texture_selection;
 
-   x = unit->x;
-   y = unit->y;
+   x = unit->tile->x;
+   y = unit->tile->y;
 
    texture_selection.texture_index = unit->type;
 

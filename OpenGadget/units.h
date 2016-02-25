@@ -36,8 +36,7 @@ typedef enum {
 struct units_unit {
    uint32_t type;
    uint32_t team;
-   uint32_t x;
-   uint32_t y;
+   struct isomap_tile* tile;
    UNITS_FACING facing;
 };
 

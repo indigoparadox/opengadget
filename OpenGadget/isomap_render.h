@@ -28,10 +28,10 @@ struct isomap_render_texture {
    SDL_Rect sprite_rect;
 };
 
-#define isomap_render_adjacent( tile_1, tile_2, tile_index, tiles_count ) \
+#define isomap_render_adjacent( tile_1, tile_2 ) \
       ( \
          tile_1 == tile_2 || \
-         ( tiles_count <= tile_index || 0 > tile_index ) || \
+         ( tile_1->map->tiles_count <= tile_2->index || 0 > tile_2->index ) || \
          ( \
             ISOMAP_TERRAIN_SEA == tile_1 && ( \
                ISOMAP_TERRAIN_RIVER == tile_2 || \
@@ -80,19 +80,13 @@ struct isomap_render_texture {
 OG_RETVAL isomap_render_load_textures( const bstring data_path );
 void isomap_render_cleanup( void );
 void isomap_render_draw_tile(
-   int x,
-   int y,
-   const uint8_t* tiles,
-   int map_width,
-   int map_height,
+   const struct isomap_tile* tile,
    const SDL_Rect* viewport,
    const ISOMAP_RENDER_ROTATE rotation
 );
 void isomap_render_draw_unit(
    const struct units_unit* unit,
    const uint8_t ani_frame,
-   int map_width,
-   int map_height,
    const SDL_Rect* viewport,
    const ISOMAP_RENDER_ROTATE rotation
 );
