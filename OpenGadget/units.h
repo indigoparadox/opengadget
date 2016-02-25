@@ -4,7 +4,7 @@
 
 #include <stdint.h>
 
-enum UNITS_TYPE {
+typedef enum {
    UNITS_TYPE_INFANTRY,
    UNITS_TYPE_H_INFANTRY,
    UNITS_TYPE_MEDIC,
@@ -24,13 +24,21 @@ enum UNITS_TYPE {
    UNITS_TYPE_TURRET_ANTI_AIR,
    UNITS_TYPE_TURRET_ANTI_SEA,
    UNITS_TYPE_OBSTACLE
-};
+} UNITS_TYPE;
+
+typedef enum {
+   UNITS_FACING_UP,
+   UNITS_FACING_DOWN,
+   UNITS_FACING_RIGHT,
+   UNITS_FACING_LEFT,
+} UNITS_FACING;
 
 struct units_unit {
    uint32_t type;
    uint32_t team;
    uint32_t x;
    uint32_t y;
+   UNITS_FACING facing;
 };
 
 #endif /* UNITS_H */

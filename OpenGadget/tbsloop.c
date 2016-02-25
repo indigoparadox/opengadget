@@ -79,6 +79,17 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
 
       }
 
+      for( i = 0 ; config->map->units_count > i ; i++ ) {
+         isomap_render_draw_unit(
+            &(config->map->units[i]),
+            0,
+            config->map->width,
+            config->map->height,
+            &viewport,
+            rotation
+         );
+      }
+
       graphics_end_draw();
 
       graphics_sleep( 1000 );
