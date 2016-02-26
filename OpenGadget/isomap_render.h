@@ -88,5 +88,6 @@ void isomap_render_draw_unit(
    const GRAPHICS_ROTATE rotation
 );
 void isomap_render_loop( const struct isomap* map, const SDL_Rect* viewport, GRAPHICS_ROTATE rotation );
+SDL_Texture* isomap_render_get_texture_unit( int index );
 
 #endif /* ISOMAP_RENDER_H */

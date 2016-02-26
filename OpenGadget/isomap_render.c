@@ -349,3 +349,7 @@ void isomap_render_loop( const struct isomap* map, const SDL_Rect* viewport, GRA
       animation_frame = 0;
    }
 }
+
+SDL_Texture* isomap_render_get_texture_unit( int index ) {
+   return isomap_render_unit_textures[index];
+}
