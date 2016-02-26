@@ -27,8 +27,6 @@ OG_RETVAL graphics_init( void ) {
       goto cleanup;
    }
 
-   //SDL_SetRenderDrawBlendMode( opengadget_renderer, SDL_BLENDMODE_BLEND );
-
 cleanup:
 
    if( 0 != retval && NULL != opengadget_window ) {
@@ -127,40 +125,8 @@ SDL_Texture* graphics_image_load( const bstring image_name, const struct pak_fil
 
    SDL_SetColorKey( surface_temp, SDL_TRUE, SDL_MapRGB( surface_temp->format, 0xfd, 0x00, 0xff ) );
 
-#if 0
-   surface_formatted = SDL_ConvertSurface( 
-      surface_temp, 
-      SDL_GetWindowSurface( opengadget_window )->format,
-      NULL
-   );
-   if( NULL == surface_formatted ) {
-      /* TODO: Error message. */
-      goto cleanup;
-   }
-#endif
-
    texture_out = SDL_CreateTextureFromSurface( opengadget_renderer, surface_temp );
-   //SDL_SetSurfaceBlendMode( image_temp, SDL_BLENDMODE_BLEND );
    SDL_SetTextureBlendMode( texture_out, SDL_BLENDMODE_BLEND );
-
-#if 0
-   texture_out = SDL_CreateTexture(
-      opengadget_renderer,
-      SDL_GetWindowPixelFormat( opengadget_window ), 
-      SDL_TEXTUREACCESS_STREAMING,
-      surface_formatted->w,
-      surface_formatted->h
-   );
-
-   SDL_LockTexture( texture_out, NULL, &pixels, &pitch );
-   memcpy( pixels, surface_formatted->pixels, surface_formatted->pitch * surface_formatted->h );
-   SDL_UnlockTexture( texture_out );
-   pixels = NULL;
-#endif
-   
-   //SDL_SetTextureBlendMode( texture_out, SDL_BLENDMODE_BLEND );
-
-   //graphics_texture_colorkey( texture_out, surface_formatted->h, 0xfd, 0xff, 0xff );
 
 cleanup:
 
