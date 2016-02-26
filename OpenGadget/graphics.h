@@ -25,6 +25,9 @@
 #include "dep\arckogako.h"
 #include "defines.h"
 
+#define GRAPHICS_SCREEN_WIDTH 640
+#define GRAPHICS_SCREEN_HEIGHT 480
+
 #define GRAPHICS_TILE_WIDTH 48
 #define GRAPHICS_TILE_HEIGHT 48
 #define GRAPHICS_TILE_OFFSET_X 24
@@ -69,6 +72,7 @@ void graphics_end_draw( void );
 void graphics_sleep( const int milliseconds );
 SDL_Texture* graphics_image_load( const bstring image_name, const struct pak_file* pak );
 void graphics_draw_tile( const SDL_Texture* texture, const int src_x, const int src_y, const int dest_x, const int dest_y );
+void graphics_draw_bg( SDL_Texture* background );
 void graphics_transform_isometric(
    int tile_x,
    int tile_y,
