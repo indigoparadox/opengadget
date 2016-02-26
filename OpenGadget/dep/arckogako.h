@@ -1,41 +1,53 @@
 
+/* This file is part of OpenGadget.
+*
+* OpenGadget is free software: you can redistribute it and/or modify it
+* under the terms of the GNU General Public License as published by the Free
+* Software Foundation, either version 3 of the License, or (at your option)
+* any later version.
+*
+* OpenGadget is distributed in the hope that it will be useful, but WITHOUT
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+* more details.
+*
+* You should have received a copy of the GNU General Public License along
+* with OpenGadget.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+//! \file       ArcKogado.cs
+//! \date       Sun Aug 24 22:01:05 2014
+//! \brief      Kogado game engine archive implementation.
+//
+// Copyright (C) 2014 by morkt
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to
+// deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+// sell copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+// IN THE SOFTWARE.
+//
+
 #ifndef ARCKOGADO_H
 #define ARCKOGADO_H
-
-
-/*
-using System;
-using System.IO;
-using System.Linq;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using System.Security.Cryptography;
-using System.Diagnostics;
-using System.Text;
-using GameRes.Formats.Strings;
-using GameRes.Utility;
-*/
 
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
 struct pak_entry {
-   //namespace GameRes.Formats.Kogado
-   //{
-   //    public class KogadoEntry : PackedEntry
-   //    {
-   // 0 : Not compressed
-   // 1 : Mariel compression
-   // 2 : Cocotte compression
-   // 3 : Xor 0xff encryption
-   /*
-   public byte     CompressionType;
-   public bool     HasCheckSum;
-   public ushort   CheckSum;
-   public long     FileTime;
-   */
-   //}
    char name[0x15];
    char ext[3];
    long offset; /* fseek() uses long. */
@@ -48,29 +60,11 @@ struct pak_entry {
    int64_t file_time;
 };
 
-//[Export(typeof(ArchiveFormat))]
-//public class PakOpener : ArchiveFormat
 struct pak_file {
-//   int test;
-//public override string         Tag{ get{ return "KOGADO"; } }
-//public override string Description{ get{ return arcStrings.KogadoDescription; } }
-//public override uint     Signature{ get{ return 0x61507948; } } // 'HyPa'
-//public override bool  IsHierarchic{ get{ return false; } }
-//public override bool     CanCreate{ get{ return true; } }
-
    int32_t count;
    FILE* file;
    struct pak_entry entries[];
 };
-
-/*
-public sealed class Crc16 : ICheckSum
-{
-   private ushort m_value = 0xffff;
-
-   public uint Value{ get{ return m_value; } }
-}
-*/
 
 struct pak_file* pakopener_try_open( FILE* file );
 uint8_t* pakopener_open_entry( const struct pak_file* pak, const struct pak_entry* entry );
