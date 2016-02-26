@@ -19,17 +19,21 @@
 
 static SDL_Texture* isomap_render_terrain_textures[0xff];
 static SDL_Texture* isomap_render_unit_textures[0xff];
+static SDL_Texture* isomap_render_ui_textures[0xff];
 static uint8_t isomap_render_textures_loaded = 0;
 
 OG_RETVAL isomap_render_load_textures( const bstring data_path ) {
    OG_RETVAL retval = 0;
    const char* gfx_terrain_name_format = "MP%d_%02d_%d";
+   const char* gfx_bldg_name_format = "MB%d_%02d_%d";
    const char* gfx_unit_name_format = "MU_%d%02d00";
    bstring gfx_tile_name = NULL;
    bstring gfx_data_path = NULL;
    FILE* gfx_data_file = NULL;
    struct pak_file* gfx_data_pak = NULL;
-   int i;
+   int i, j;
+   struct tagbstring ui_cursor = bsStatic( "RS_MAPCUR" );
+   struct tagbstring ui_marker = bsStatic( "RS_MAPMARK" );
 
    if( 0 != isomap_render_textures_loaded ) {
       goto cleanup;
@@ -49,22 +53,36 @@ OG_RETVAL isomap_render_load_textures( const bstring data_path ) {
       goto cleanup;
    }
 
-   memset( isomap_render_terrain_textures, '\0', 0xFF * sizeof( SDL_Texture* ) );
+   memset( isomap_render_terrain_textures, '\0', 0xff * sizeof( SDL_Texture* ) );
+   memset( isomap_render_unit_textures, '\0', 0xff * sizeof( SDL_Texture* ) );
+   memset( isomap_render_ui_textures, '\0', 0xff * sizeof( SDL_Texture* ) );
 
-   for( i = 0 ; ISOMAP_TERRAIN_HQ > i ; i++ ) {
+   /* Load terrain tiles. */
+   for( i = 0 ; ISOMAP_BUILDINGS_TILES_OFFSET > i ; i++ ) {
       bassignformat( gfx_tile_name, gfx_terrain_name_format, 1, i, 0 );
       isomap_render_terrain_textures[i] = graphics_image_load( gfx_tile_name, gfx_data_pak );
    }
 
+   /* Load buildings tiles. */
+   for( i = 0 ; (0x1B - ISOMAP_BUILDINGS_TILES_OFFSET) > i ; i++ ) {
+      bassignformat( gfx_tile_name, gfx_bldg_name_format, 0, i, 0 );
+      isomap_render_terrain_textures[ISOMAP_BUILDINGS_TILES_OFFSET + i] = graphics_image_load( gfx_tile_name, gfx_data_pak );
+   }
+
+   /* Load the white units. */
    for( i = 0 ; ISOMAP_RENDER_UNIT_TEXTURES_MAX > i ; i++ ) {
       bassignformat( gfx_tile_name, gfx_unit_name_format, 0, i );
       isomap_render_unit_textures[i] = graphics_image_load( gfx_tile_name, gfx_data_pak );
    }
 
+   /* Load the black units. */
    for( i = ISOMAP_RENDER_UNIT_TEXTURES_MAX ; (2 * ISOMAP_RENDER_UNIT_TEXTURES_MAX) > i ; i++ ) {
       bassignformat( gfx_tile_name, gfx_unit_name_format, 1, (i - ISOMAP_RENDER_UNIT_TEXTURES_MAX) );
       isomap_render_unit_textures[i] = graphics_image_load( gfx_tile_name, gfx_data_pak );
    }
+
+   isomap_render_ui_textures[ISOMAP_RENDER_UI_MAPCURSOR] = graphics_image_load( &ui_cursor, gfx_data_pak );
+   isomap_render_ui_textures[ISOMAP_RENDER_UI_MAPMARKER] = graphics_image_load( &ui_marker, gfx_data_pak );
 
    isomap_render_textures_loaded = 1;
 
@@ -84,11 +102,20 @@ cleanup:
 void isomap_render_cleanup( void ) {
    int i;
 
-   for( i = 0; 0xFF > i; i++ ) {
+   for( i = 0 ; 0xff > i ; i++ ) {
       if( NULL != isomap_render_terrain_textures[i] ) {
          SDL_DestroyTexture( isomap_render_terrain_textures[i] );
       }
+      if( NULL != isomap_render_unit_textures[i] ) {
+         SDL_DestroyTexture( isomap_render_unit_textures[i] );
+      }
    }
+
+   memset( isomap_render_terrain_textures, '\0', 0xff * sizeof( SDL_Texture* ) );
+   memset( isomap_render_unit_textures, '\0', 0xff * sizeof( SDL_Texture* ) );
+   memset( isomap_render_ui_textures, '\0', 0xff * sizeof( SDL_Texture* ) );
+
+   isomap_render_textures_loaded = 0;
 }
 
 static void isomap_render_select_terrain(
@@ -366,6 +393,13 @@ void isomap_render_loop( const struct isomap* map, const SDL_Rect* viewport, GRA
    }
 }
 
-SDL_Texture* isomap_render_get_texture_unit( int index ) {
-   return isomap_render_unit_textures[index];
+SDL_Texture* isomap_render_get_texture( ISOMAP_RENDER_TEXTURE_TYPE type, int index ) {
+   switch( type ) {
+      case ISOMAP_RENDER_TEXTURE_TYPE_TERRAIN:
+         return isomap_render_terrain_textures[index];
+      case ISOMAP_RENDER_TEXTURE_TYPE_UNIT:
+         return isomap_render_unit_textures[index];
+      case ISOMAP_RENDER_TEXTURE_TYPE_UI:
+         return isomap_render_ui_textures[index];
+   }
 }

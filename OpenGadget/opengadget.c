@@ -40,6 +40,7 @@ int main( int argc, char* argv[] ) {
    OG_BOOL use_data_directory = OG_FALSE;
    long data_size;
    int i;
+   struct pak_entry* entry;
 
    data_path = bfromcstr( argv[1] );
 
@@ -64,15 +65,17 @@ int main( int argc, char* argv[] ) {
          goto cleanup;
       }
 
-      map_data = pakopener_open_entry( map_pak, &(map_pak->entries[0]) );
+      entry = &(map_pak->entries[16]);
+
+      map_data = pakopener_open_entry( map_pak, entry );
       if( NULL == map_data ) {
          SDL_LogCritical( SDL_LOG_CATEGORY_APPLICATION, "Unable to open map. Aborting." );
          retval = 8;
          goto cleanup;
       }
 
-      map_config.map_name = bfromcstr( map_pak->entries[0].name );
-      map_config.map = isomap_load_map( map_data, map_pak->entries[0].unpacked_size );
+      map_config.map_name = bfromcstr( entry->name );
+      map_config.map = isomap_load_map( map_data, entry->unpacked_size );
    } else {
       pak_file = fopen( bdata( data_path ), "rb" );
       /* TODO: Error handling. */

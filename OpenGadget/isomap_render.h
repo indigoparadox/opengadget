@@ -28,6 +28,17 @@
 #define ISOMAP_RENDER_UNIT_TEXTURES_MAX 20
 
 typedef enum {
+   ISOMAP_RENDER_TEXTURE_TYPE_TERRAIN,
+   ISOMAP_RENDER_TEXTURE_TYPE_UNIT,
+   ISOMAP_RENDER_TEXTURE_TYPE_UI
+} ISOMAP_RENDER_TEXTURE_TYPE;
+
+typedef enum {
+   ISOMAP_RENDER_UI_MAPCURSOR,
+   ISOMAP_RENDER_UI_MAPMARKER
+} ISOMAP_RENDER_UI;
+
+typedef enum {
    ISOMAP_RENDER_BITWISE_UP = 1,
    ISOMAP_RENDER_BITWISE_RIGHT = 2,
    ISOMAP_RENDER_BITWISE_DOWN = 4,
@@ -84,6 +95,6 @@ void isomap_render_draw_unit(
    const GRAPHICS_ROTATE rotation
 );
 void isomap_render_loop( const struct isomap* map, const SDL_Rect* viewport, GRAPHICS_ROTATE rotation );
-SDL_Texture* isomap_render_get_texture_unit( int index );
+SDL_Texture* isomap_render_get_texture( ISOMAP_RENDER_TEXTURE_TYPE type, int index );
 
 #endif /* ISOMAP_RENDER_H */
