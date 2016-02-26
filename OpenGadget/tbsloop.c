@@ -8,7 +8,7 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
    int i = 0;
    int j, k, j_max, k_max, x_iter, y_iter;
    SDL_Rect viewport;
-   ISOMAP_RENDER_ROTATE rotation = ISOMAP_RENDER_ROTATE_0;
+   GRAPHICS_ROTATE rotation = GRAPHICS_ROTATE_0;
    SDL_Event event;
 
    graphics_set_title( config->map_name );
@@ -67,7 +67,7 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
 
       graphics_clear();
 
-      if( ISOMAP_RENDER_ROTATE_0 == rotation || ISOMAP_RENDER_ROTATE_270 == rotation ) {
+      if( GRAPHICS_ROTATE_0 == rotation || GRAPHICS_ROTATE_270 == rotation ) {
          for( i = config->map->tiles_count - 1 ; 0 <= i ; i-- ) {
             isomap_render_draw_tile(
                &(config->map->tiles[i]),
