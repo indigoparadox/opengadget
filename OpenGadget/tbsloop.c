@@ -116,7 +116,7 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
       );
 
       graphics_draw_tile(
-         isomap_render_get_texture_unit( 0 ),
+         isomap_render_get_texture( ISOMAP_RENDER_TEXTURE_TYPE_UI, ISOMAP_RENDER_UI_MAPCURSOR ),
          0,
          0,
          mouse_draw_x,
