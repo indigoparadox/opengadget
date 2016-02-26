@@ -34,6 +34,7 @@ OG_RETVAL isomap_render_load_textures( const bstring data_path ) {
    int i, j;
    struct tagbstring ui_cursor = bsStatic( "RS_MAPCUR" );
    struct tagbstring ui_marker = bsStatic( "RS_MAPMARK" );
+   struct tagbstring ui_bgtile = bsStatic( "UI_ROGOTILE" );
 
    if( 0 != isomap_render_textures_loaded ) {
       goto cleanup;
@@ -83,6 +84,7 @@ OG_RETVAL isomap_render_load_textures( const bstring data_path ) {
 
    isomap_render_ui_textures[ISOMAP_RENDER_UI_MAPCURSOR] = graphics_image_load( &ui_cursor, gfx_data_pak );
    isomap_render_ui_textures[ISOMAP_RENDER_UI_MAPMARKER] = graphics_image_load( &ui_marker, gfx_data_pak );
+   isomap_render_ui_textures[ISOMAP_RENDER_UI_BGTILE] = graphics_image_load( &ui_bgtile, gfx_data_pak );
 
    isomap_render_textures_loaded = 1;
 
@@ -350,6 +352,8 @@ cleanup:
 void isomap_render_loop( const struct isomap* map, const SDL_Rect* viewport, GRAPHICS_ROTATE rotation ) {
    int i, j, render_x, render_y;
    static int animation_frame = 0;
+   
+   graphics_draw_bg( isomap_render_get_texture( ISOMAP_RENDER_TEXTURE_TYPE_UI, ISOMAP_RENDER_UI_BGTILE ) );
 
    for( i = map->tiles_count - 1 ; 0 <= i ; i-- ) {
       switch( rotation ) {

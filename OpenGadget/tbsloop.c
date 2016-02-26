@@ -40,8 +40,8 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
       goto cleanup;
    }
 
-   viewport.w = 640;
-   viewport.h = 480;
+   viewport.w = GRAPHICS_SCREEN_WIDTH;
+   viewport.h = GRAPHICS_SCREEN_HEIGHT;
    viewport.x = 0;
    viewport.y = 200;
 
@@ -65,7 +65,7 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
                );
                break;
 
-            case SDL_KEYUP:
+            case SDL_KEYDOWN:
                switch( event.key.keysym.sym ) {
                   case SDLK_r:
                      rotation++;
@@ -125,7 +125,7 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
 
       graphics_end_draw();
 
-      graphics_sleep( 500 );
+      graphics_sleep( 250 );
    }
 
 cleanup:

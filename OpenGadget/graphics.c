@@ -29,7 +29,7 @@ OG_RETVAL graphics_init( void ) {
       goto cleanup;
    }
 
-   opengadget_window = SDL_CreateWindow( "OpenGadget", 100, 100, 640, 480, SDL_WINDOW_SHOWN );
+   opengadget_window = SDL_CreateWindow( "OpenGadget", 100, 100, GRAPHICS_SCREEN_WIDTH, GRAPHICS_SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
    if( NULL == opengadget_window ) {
       SDL_LogCritical( SDL_LOG_CATEGORY_VIDEO, "SDL_CreateWindow: %s", SDL_GetError() );
       retval = 2;
@@ -189,6 +189,22 @@ void graphics_draw_tile( const SDL_Texture* texture, const int src_x, const int 
    screen_rect.y = dest_y;
 
    SDL_RenderCopy( opengadget_renderer, texture, &tile_rect, &screen_rect );
+}
+
+void graphics_draw_bg( SDL_Texture* background ) {
+   SDL_Rect bg_src;
+   SDL_Rect bg_dst;
+
+   bg_src.x = 0;
+   bg_src.y = 0;
+   SDL_QueryTexture( background, NULL, NULL, &bg_src.w, &bg_src.h );
+   bg_dst.w = bg_src.w;
+   bg_dst.h = bg_src.h;
+   for( bg_dst.x = 0 ; GRAPHICS_SCREEN_WIDTH > bg_dst.x ; bg_dst.x += bg_src.w ) {
+      for( bg_dst.y = 0 ; GRAPHICS_SCREEN_HEIGHT > bg_dst.y ; bg_dst.y += bg_src.h ) {
+         SDL_RenderCopy( opengadget_renderer, background, &bg_src, &bg_dst );
+      }
+   }
 }
 
 void graphics_transform_isometric( 
