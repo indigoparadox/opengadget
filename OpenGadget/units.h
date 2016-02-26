@@ -33,6 +33,11 @@ typedef enum {
    UNITS_FACING_LEFT,
 } UNITS_FACING;
 
+typedef enum {
+   UNITS_TEAM_WHITE,
+   UNITS_TEAM_BLACK
+} UNITS_TEAM;
+
 struct units_unit {
    uint32_t type;
    uint32_t team;

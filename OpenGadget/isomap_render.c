@@ -8,7 +8,7 @@ static uint8_t isomap_render_textures_loaded = 0;
 OG_RETVAL isomap_render_load_textures( const bstring data_path ) {
    OG_RETVAL retval = 0;
    const char* gfx_terrain_name_format = "MP%d_%02d_%d";
-   const char* gfx_unit_name_format = "MU_0%02d00";
+   const char* gfx_unit_name_format = "MU_%d%02d00";
    bstring gfx_tile_name = NULL;
    bstring gfx_data_path = NULL;
    FILE* gfx_data_file = NULL;
@@ -40,8 +40,13 @@ OG_RETVAL isomap_render_load_textures( const bstring data_path ) {
       isomap_render_terrain_textures[i] = graphics_image_load( gfx_tile_name, gfx_data_pak );
    }
 
-   for( i = 0 ; 20 > i ; i++ ) {
-      bassignformat( gfx_tile_name, gfx_unit_name_format, i );
+   for( i = 0 ; ISOMAP_RENDER_UNIT_TEXTURES_MAX > i ; i++ ) {
+      bassignformat( gfx_tile_name, gfx_unit_name_format, 0, i );
+      isomap_render_unit_textures[i] = graphics_image_load( gfx_tile_name, gfx_data_pak );
+   }
+
+   for( i = ISOMAP_RENDER_UNIT_TEXTURES_MAX ; (2 * ISOMAP_RENDER_UNIT_TEXTURES_MAX) > i ; i++ ) {
+      bassignformat( gfx_tile_name, gfx_unit_name_format, 1, (i - ISOMAP_RENDER_UNIT_TEXTURES_MAX) );
       isomap_render_unit_textures[i] = graphics_image_load( gfx_tile_name, gfx_data_pak );
    }
 
@@ -80,7 +85,6 @@ static void isomap_render_select_terrain(
    ISOMAP_RENDER_BITWISE temp_sum = 0;
    struct isomap_tile* current_tile;
    struct isomap_tile* test_tile;
-   //int tiles_count = map_width * map_height;
    uint32_t current_x = tile->x;
    uint32_t current_y = tile->map->width - tile->y - 1;
 
@@ -208,7 +212,12 @@ static void isomap_render_select_unit(
    texture_selection->sprite_rect.x = GRAPHICS_TILE_WIDTH * animation_frame;
    texture_selection->sprite_rect.y = GRAPHICS_TILE_HEIGHT * (unit->facing + 1);
    
-   texture_selection->texture_index = unit->type;
+   if( unit->team ) {
+      texture_selection->texture_index = ISOMAP_RENDER_UNIT_TEXTURES_MAX + unit->type;
+   } else {
+      texture_selection->texture_index = unit->type;
+   }
+   
 }
 
 void isomap_render_draw_tile(

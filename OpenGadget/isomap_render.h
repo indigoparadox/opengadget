@@ -9,6 +9,8 @@
 #include "isomap.h"
 #include "units.h"
 
+#define ISOMAP_RENDER_UNIT_TEXTURES_MAX 20
+
 typedef enum {
    ISOMAP_RENDER_BITWISE_UP = 1,
    ISOMAP_RENDER_BITWISE_RIGHT = 2,
