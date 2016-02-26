@@ -208,3 +208,41 @@ void graphics_draw_tile( const SDL_Texture* texture, const int src_x, const int 
 
    SDL_RenderCopy( opengadget_renderer, texture, &tile_rect, &screen_rect );
 }
+
+void graphics_transform_isometric( 
+   int tile_x,
+   int tile_y,
+   int* screen_x,
+   int* screen_y,
+   int map_width,
+   int map_height,
+   const SDL_Rect* viewport,
+   int rotation
+) {
+
+   int i = 0, transformed_x, transformed_y;
+
+   switch( rotation ) {
+      case GRAPHICS_ROTATE_0:
+         transformed_y = tile_y;
+         transformed_x = tile_x;
+         break;
+      case GRAPHICS_ROTATE_90:
+         transformed_y = map_height - tile_x;
+         transformed_x = tile_x;
+         break;
+      case GRAPHICS_ROTATE_180:
+         transformed_x = map_width - tile_x;
+         transformed_y = map_height - tile_y;
+         break;
+      case GRAPHICS_ROTATE_270:
+         transformed_x = map_width - tile_y;
+         transformed_y = tile_x;
+         break;
+   }
+
+   *screen_x = viewport->x + (transformed_x * GRAPHICS_TILE_WIDTH / 2) +
+      (transformed_y * GRAPHICS_TILE_WIDTH / 2);
+   *screen_y = viewport->y + ((transformed_y * GRAPHICS_TILE_OFFSET_X / 2) -
+      (transformed_x * GRAPHICS_TILE_OFFSET_X / 2));
+}

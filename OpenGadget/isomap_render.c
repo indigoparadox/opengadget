@@ -173,7 +173,6 @@ static void isomap_render_select_tile(
    }
 
    if( 0 != sides_sum ) {
-      //sides_sum = 15 - sides_sum;
       texture_selection->sprite_rect.x =
          (sides_sum % GRAPHICS_TILES_X_COUNT) * GRAPHICS_TILE_WIDTH;
       texture_selection->sprite_rect.y =
@@ -206,10 +205,20 @@ void isomap_render_draw_tile(
 
    isomap_render_select_tile( tile, rotation, &texture_selection );
 
-   isomap_render_tile_rotate( draw_x, draw_y, tile->map->width, tile->map->height, i, rotation );
+   graphics_transform_isometric(
+      tile->x,
+      tile->y,
+      &draw_x,
+      &draw_y,
+      tile->map->width,
+      tile->map->height,
+      viewport,
+      rotation
+   );
 
    sprite_texture = isomap_render_terrain_textures[texture_selection.texture_index];
    if( NULL == sprite_texture ) {
+      /* TODO: Draw a placeholder. */
       goto cleanup;
    }
 
@@ -217,10 +226,8 @@ void isomap_render_draw_tile(
       sprite_texture,
       texture_selection.sprite_rect.x,
       texture_selection.sprite_rect.y,
-      viewport->x + (draw_x * GRAPHICS_TILE_WIDTH / 2) + 
-         (draw_y * GRAPHICS_TILE_WIDTH / 2),
-      viewport->y + ((draw_y * GRAPHICS_TILE_OFFSET_X / 2) - 
-         (draw_x * GRAPHICS_TILE_OFFSET_X / 2))
+      draw_x,
+      draw_y
    );
 
 cleanup:
@@ -238,9 +245,6 @@ void isomap_render_draw_unit(
    SDL_Texture* sprite_texture = NULL;
    struct isomap_render_texture texture_selection;
 
-   x = unit->tile->x;
-   y = unit->tile->y;
-
    texture_selection.texture_index = unit->type;
 
    texture_selection.sprite_rect.x = 0;
@@ -248,7 +252,16 @@ void isomap_render_draw_unit(
    texture_selection.sprite_rect.y = 0;
    //   floor( (sides_sum / GRAPHICS_TILES_X_COUNT) ) * GRAPHICS_TILE_HEIGHT;
 
-   isomap_render_tile_rotate( x, y, unit->tile->map->width, unit->tile->map->height, i, rotation );
+   graphics_transform_isometric(
+      unit->tile->x,
+      unit->tile->y,
+      &x,
+      &y,
+      unit->tile->map->width,
+      unit->tile->map->height,
+      viewport,
+      rotation
+   );
 
    sprite_texture = isomap_render_unit_textures[texture_selection.texture_index];
    if( NULL == sprite_texture ) {
@@ -259,8 +272,8 @@ void isomap_render_draw_unit(
       sprite_texture,
       texture_selection.sprite_rect.x,
       texture_selection.sprite_rect.y,
-      viewport->x + (x * GRAPHICS_TILE_WIDTH / 2) + (y * GRAPHICS_TILE_WIDTH / 2),
-      viewport->y + ((y * GRAPHICS_TILE_OFFSET_X / 2) - (x * GRAPHICS_TILE_OFFSET_X / 2))
+      x,
+      y
    );
 
 cleanup:

@@ -42,11 +42,11 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
                      break;
 
                   case SDLK_RIGHT:
-                     viewport.x += 100;
+                     viewport.x -= 100;
                      break;
 
                   case SDLK_LEFT:
-                     viewport.x -= 100;
+                     viewport.x += 100;
                      break;
 
                   case SDLK_UP:
