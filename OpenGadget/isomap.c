@@ -66,7 +66,7 @@ struct isomap* isomap_load_map( uint8_t* map_data, uint32_t map_data_len ) {
       memcpy( &(isomap_out->units[units_cursor].type), &(map_data[cursor]), sizeof( uint32_t ) );
       cursor += sizeof( uint32_t );
 
-      // ???
+      memcpy( &(isomap_out->units[units_cursor].team), &(map_data[cursor]), sizeof( uint32_t ) );
       cursor += sizeof( uint32_t );
 
       memcpy( &y_tmp, &(map_data[cursor]), sizeof( uint32_t ) );
