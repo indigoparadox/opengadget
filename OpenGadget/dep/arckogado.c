@@ -1,4 +1,21 @@
-﻿//! \file       ArcKogado.cs
+﻿
+/* This file is part of OpenGadget.
+*
+* OpenGadget is free software: you can redistribute it and/or modify it
+* under the terms of the GNU General Public License as published by the Free
+* Software Foundation, either version 3 of the License, or (at your option)
+* any later version.
+*
+* OpenGadget is distributed in the hope that it will be useful, but WITHOUT
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+* FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+* more details.
+*
+* You should have received a copy of the GNU General Public License along
+* with OpenGadget.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+//! \file       ArcKogado.cs
 //! \date       Sun Aug 24 22:01:05 2014
 //! \brief      Kogado game engine archive implementation.
 //
@@ -24,17 +41,6 @@
 //
 
 #include "arckogako.h"
-
-//[Export(typeof(ArchiveFormat))]
-//public class PakOpener : ArchiveFormat
-//{
-      
-/*
-public PakOpener ()
-{
-   Extensions = new string[] { "pak" };
-}
-*/
 
 // public override ArcFile TryOpen( ArcView file )
 struct pak_file* pakopener_try_open( FILE* file ) {
@@ -261,27 +267,7 @@ uint8_t* pakopener_open_entry( const struct pak_file* pak, const struct pak_entr
    }
 
    if( 1 == entry->compression_type ) {
-//#ifdef MARIELX
-      //var unpacked = new byte[packed_entry.UnpackedSize];
-      /*
-      unpacked = calloc( sizeof( uint8_t ) * entry->unpacked_size );
-      if( NULL == unpacked ) {
-         failure = 1;
-         goto cleanup;
-      }
-      */
-
-      //var mariel = new MarielEncoder();
-      //mariel.Unpack (input, unpacked, unpacked.Length);
       unpacked = mariel_unpack( packed, entry->unpacked_size );
-      //return new MemoryStream (unpacked);
-   /*
-      }
-      finally
-      {
-         input.Dispose();
-      */
-//#endif /* MARIELX */
    }
 
    if( 0 == entry->compression_type ) {
@@ -491,8 +477,6 @@ private static readonly ushort[] Crc16Table = {
 
 #endif /* ARCKOGADO_CREATE */
 
-//#ifdef MARIELX
-
 //public static void CopyOverlapped( byte[] data, int src, int dst, int count ) {
 static void mariel_copy_overlapped( uint8_t* data, int src, int dst, int count ) {
    int preceding;
@@ -527,8 +511,6 @@ uint8_t* mariel_unpack( uint8_t* input, uint32_t dest_size ) {
    int out_pos = 0;
    int i = 0;
    uint8_t b = 0;
-   //using (var reader = new BinaryReader (input, Encoding.ASCII, true))
-   //{
    uint32_t bits = 0;
    uint8_t* dest = NULL;
    int failure = 0;
@@ -605,7 +587,6 @@ uint8_t* mariel_unpack( uint8_t* input, uint32_t dest_size ) {
       out_pos += count;
       dest_size -= count;
    }
-   //}
 
 cleanup:
 
@@ -615,7 +596,3 @@ cleanup:
 
    return dest;
 }
-//}
-//}
-
-//#endif /* MARIELX */
