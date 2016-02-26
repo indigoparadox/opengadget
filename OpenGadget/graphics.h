@@ -41,6 +41,16 @@ void graphics_transform_isometric(
    const SDL_Rect* viewport,
    int rotation
 );
+void graphics_transform_isometric_reverse(
+   int* tile_x,
+   int* tile_y,
+   int screen_x,
+   int screen_y,
+   int map_width,
+   int map_height,
+   const SDL_Rect* viewport,
+   int rotation
+);
 
 #endif /* GRAPHICS_H */
 

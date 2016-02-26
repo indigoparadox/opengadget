@@ -211,3 +211,23 @@ void graphics_transform_isometric(
    *screen_y = viewport->y + ((transformed_y * GRAPHICS_TILE_OFFSET_X / 2) -
       (transformed_x * GRAPHICS_TILE_OFFSET_X / 2));
 }
+
+void graphics_transform_isometric_reverse(
+   int* tile_x,
+   int* tile_y,
+   int screen_x,
+   int screen_y,
+   int map_width,
+   int map_height,
+   const SDL_Rect* viewport,
+   int rotation
+) {
+   screen_x -= viewport->x;
+   screen_y -= viewport->y;
+
+   screen_x /= (GRAPHICS_TILE_WIDTH / 2);
+   screen_y /= -1 * (GRAPHICS_TILE_HEIGHT / 4);
+
+   *tile_x = ((screen_x + screen_y) / 2) + 1;
+   *tile_y = ((screen_x - screen_y) / 2) - 2;
+}
