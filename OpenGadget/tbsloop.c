@@ -6,11 +6,9 @@ extern bstring data_path;
 OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
    OG_RETVAL retval = 0;
    int i = 0;
-   int j, k, j_max, k_max, x_iter, y_iter;
    SDL_Rect viewport;
    GRAPHICS_ROTATE rotation = GRAPHICS_ROTATE_0;
    SDL_Event event;
-   int animation_frame = 0;
    bstring new_title = NULL;
 
    new_title = bfromcstr( "" );
@@ -74,43 +72,11 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
 
       graphics_clear();
 
-      if( GRAPHICS_ROTATE_0 == rotation || GRAPHICS_ROTATE_270 == rotation ) {
-         for( i = config->map->tiles_count - 1 ; 0 <= i ; i-- ) {
-            isomap_render_draw_tile(
-               &(config->map->tiles[i]),
-               &viewport,
-               rotation
-            );
-         }
-      } else {
-         for( i = 0 ; config->map->tiles_count > i ; i++ ) {
-            isomap_render_draw_tile(
-               &(config->map->tiles[i]),
-               &viewport,
-               rotation
-            );
-         }
-      }
-
-      for( i = 0 ; config->map->tiles_count > i ; i++ ) {
-         if( NULL != config->map->tiles[i].unit ) {
-            isomap_render_draw_unit(
-               config->map->tiles[i].unit,
-               animation_frame,
-               &viewport,
-               rotation
-               );
-         }
-      }
+      isomap_render_loop( config->map, &viewport, rotation );
 
       graphics_end_draw();
 
-      animation_frame++;
-      if( 3 < animation_frame ) {
-         animation_frame = 0;
-      }
-
-      graphics_sleep( 1000 );
+      graphics_sleep( 500 );
    }
 
 cleanup:
