@@ -185,31 +185,14 @@ void graphics_transform_isometric(
    const SDL_Rect* viewport,
    int rotation
 ) {
-   int i = 0, transformed_x, transformed_y;
+   int i = 0;
 
-   switch( rotation ) {
-      case GRAPHICS_ROTATE_0:
-         transformed_y = tile_y;
-         transformed_x = tile_x;
-         break;
-      case GRAPHICS_ROTATE_90:
-         transformed_y = map_height - tile_x;
-         transformed_x = tile_y;
-         break;
-      case GRAPHICS_ROTATE_180:
-         transformed_x = map_width - tile_x;
-         transformed_y = map_height - tile_y;
-         break;
-      case GRAPHICS_ROTATE_270:
-         transformed_x = map_width - tile_y;
-         transformed_y = tile_x;
-         break;
-   }
+   graphics_isometric_tile_rotate( tile_x, tile_y, map_width, map_height, rotation );
 
-   *screen_x = viewport->x + (transformed_x * GRAPHICS_TILE_WIDTH / 2) +
-      (transformed_y * GRAPHICS_TILE_WIDTH / 2);
-   *screen_y = viewport->y + ((transformed_y * GRAPHICS_TILE_OFFSET_X / 2) -
-      (transformed_x * GRAPHICS_TILE_OFFSET_X / 2));
+   *screen_x = viewport->x + (tile_x * GRAPHICS_TILE_WIDTH / 2) +
+      (tile_y * GRAPHICS_TILE_WIDTH / 2);
+   *screen_y = viewport->y + ((tile_y * GRAPHICS_TILE_OFFSET_X / 2) -
+      (tile_x * GRAPHICS_TILE_OFFSET_X / 2));
 }
 
 void graphics_transform_isometric_reverse(
@@ -230,4 +213,11 @@ void graphics_transform_isometric_reverse(
 
    *tile_x = ((screen_x + screen_y) / 2) + 1;
    *tile_y = ((screen_x - screen_y) / 2) - 2;
+
+   graphics_isometric_tile_rotate( *tile_x, *tile_y, map_width, map_height, rotation );
+
+   if( GRAPHICS_ROTATE_270 == rotation || GRAPHICS_ROTATE_90 == rotation ) {
+      *tile_x = map_width - *tile_x;
+      *tile_y = map_height - *tile_y;
+   }
 }

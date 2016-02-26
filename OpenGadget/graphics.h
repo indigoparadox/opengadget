@@ -23,6 +23,28 @@ typedef enum {
    GRAPHICS_ROTATE_270
 } GRAPHICS_ROTATE;
 
+/* TODO: Maybe make this smarter with XOR at some point, but don't            *
+* overcomplicate right now.                                                  */
+#define graphics_isometric_tile_rotate( x, y, width, height, rotation ) \
+   switch( rotation ) { \
+      case GRAPHICS_ROTATE_90: \
+         x = x ^ y; \
+         y = x ^ y; \
+         x = x ^ y; \
+         y = height - y; \
+         break; \
+      case GRAPHICS_ROTATE_180: \
+         x = width - x; \
+         y = height - y; \
+         break; \
+      case GRAPHICS_ROTATE_270: \
+         x = x ^ y; \
+         y = x ^ y; \
+         x = x ^ y; \
+         x = width - x; \
+         break; \
+   }
+
 OG_RETVAL graphics_init( void );
 void graphics_cleanup( void );
 void graphics_set_title( const bstring title );
