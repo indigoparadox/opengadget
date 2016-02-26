@@ -40,13 +40,12 @@ struct isomap* isomap_load_map( uint8_t* map_data, uint32_t map_data_len ) {
    isomap_out->tiles = calloc( isomap_out->tiles_count, sizeof( struct isomap_tile ) );
 
    /* Load the tiles backwards so that they don't overlap when drawn by index. */
-   //memcpy( isomap_out->tiles, &(map_data[cursor]), map_portion_len );
    int index = 0;
    for( i = 0 ; isomap_out->height > i ; i ++ ) {
       for( j = isomap_out->width - 1 ; 0 <= j ; j-- ) {
          isomap_out->tiles[index].terrain = map_data[cursor++];
-         isomap_out->tiles[index].x = i; //(j / isomap_out->width);
-         isomap_out->tiles[index].y = j; //(j % isomap_out->width);
+         isomap_out->tiles[index].x = i;
+         isomap_out->tiles[index].y = j;
          isomap_out->tiles[index].map = isomap_out;
          isomap_out->tiles[index].index = index;
          index++;
