@@ -192,6 +192,25 @@ static void isomap_render_select_terrain(
 #endif /* DEBUG */
 }
 
+static void isomap_render_select_unit(
+   const struct units_unit* unit,
+   int animation_frame,
+   GRAPHICS_ROTATE rotation,
+   struct isomap_render_texture* texture_selection
+) {
+   int new_direction;
+
+   new_direction = unit->facing + rotation;
+   if( GRAPHICS_ROTATE_270 < new_direction ) {
+      new_direction = unit->facing % new_direction;
+   }
+
+   texture_selection->sprite_rect.x = GRAPHICS_TILE_WIDTH * animation_frame;
+   texture_selection->sprite_rect.y = GRAPHICS_TILE_HEIGHT * (unit->facing + 1);
+   
+   texture_selection->texture_index = unit->type;
+}
+
 void isomap_render_draw_tile(
    const struct isomap_tile* tile,
    const SDL_Rect* viewport, 
@@ -245,13 +264,8 @@ void isomap_render_draw_unit(
    SDL_Texture* sprite_texture = NULL;
    struct isomap_render_texture texture_selection;
 
-   texture_selection.texture_index = unit->type;
-
-   texture_selection.sprite_rect.x = 0;
-   //   (sides_sum % GRAPHICS_TILES_X_COUNT) * GRAPHICS_TILE_WIDTH;
-   texture_selection.sprite_rect.y = 0;
-   //   floor( (sides_sum / GRAPHICS_TILES_X_COUNT) ) * GRAPHICS_TILE_HEIGHT;
-
+   isomap_render_select_unit( unit, ani_frame, rotation, &texture_selection );
+   
    graphics_transform_isometric(
       unit->tile->x,
       unit->tile->y,
