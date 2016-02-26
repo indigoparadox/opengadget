@@ -2,3 +2,4 @@ syntax: glob
 *.suo
 Debug
 *.user
+TestData
