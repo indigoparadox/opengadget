@@ -296,41 +296,43 @@ cleanup:
 }
 
 void isomap_render_loop( const struct isomap* map, const SDL_Rect* viewport, GRAPHICS_ROTATE rotation ) {
-   int i;
+   int i, j, render_x, render_y;
    static int animation_frame = 0;
 
-   if( GRAPHICS_ROTATE_0 == rotation || GRAPHICS_ROTATE_270 == rotation ) {
-      for( i = map->tiles_count - 1 ; 0 <= i ; i-- ) {
-         isomap_render_draw_tile(
-            &(map->tiles[i]),
+   for( i = map->tiles_count - 1 ; 0 <= i ; i-- ) {
+      switch( rotation ) {
+         case GRAPHICS_ROTATE_0:
+            j = i;
+            break;
+         case GRAPHICS_ROTATE_90:
+            render_x = i % map->width;
+            render_y = i / map->width;
+            j = (render_y * map->width) + (map->width - render_x - 1);
+            break;
+         case GRAPHICS_ROTATE_180:
+            j = map->tiles_count - i - 1;
+            break;
+         case GRAPHICS_ROTATE_270:
+            render_x = i % map->width;
+            render_y = i / map->width;
+            j = map->tiles_count - ((render_y * map->width) + (map->width - render_x - 1)) - 1;
+            break;
+      }
+
+      isomap_render_draw_tile(
+         &(map->tiles[j]),
+         viewport,
+         rotation
+         );
+      if( NULL != map->tiles[j].unit ) {
+         isomap_render_draw_unit(
+            map->tiles[j].unit,
+            animation_frame,
             viewport,
             rotation
-         );
-         if( NULL != map->tiles[i].unit ) {
-            isomap_render_draw_unit(
-               map->tiles[i].unit,
-               animation_frame,
-               viewport,
-               rotation
             );
-         }
       }
-   } else {
-      for( i = 0 ; map->tiles_count > i ; i++ ) {
-         isomap_render_draw_tile(
-            &(map->tiles[i]),
-            viewport,
-            rotation
-         );
-         if( NULL != map->tiles[i].unit ) {
-            isomap_render_draw_unit(
-               map->tiles[i].unit,
-               animation_frame,
-               viewport,
-               rotation
-            );
-         }
-      }
+
    }
 
    animation_frame++;
