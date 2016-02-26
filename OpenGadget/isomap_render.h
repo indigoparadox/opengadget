@@ -10,13 +10,6 @@
 #include "units.h"
 
 typedef enum {
-   ISOMAP_RENDER_ROTATE_0,
-   ISOMAP_RENDER_ROTATE_90,
-   ISOMAP_RENDER_ROTATE_180,
-   ISOMAP_RENDER_ROTATE_270
-} ISOMAP_RENDER_ROTATE;
-
-typedef enum {
    ISOMAP_RENDER_BITWISE_UP = 1,
    ISOMAP_RENDER_BITWISE_RIGHT = 2,
    ISOMAP_RENDER_BITWISE_DOWN = 4,
@@ -84,13 +77,13 @@ void isomap_render_cleanup( void );
 void isomap_render_draw_tile(
    const struct isomap_tile* tile,
    const SDL_Rect* viewport,
-   const ISOMAP_RENDER_ROTATE rotation
+   const GRAPHICS_ROTATE rotation
 );
 void isomap_render_draw_unit(
    const struct units_unit* unit,
    const uint8_t ani_frame,
    const SDL_Rect* viewport,
-   const ISOMAP_RENDER_ROTATE rotation
+   const GRAPHICS_ROTATE rotation
 );
 
 #endif /* ISOMAP_RENDER_H */

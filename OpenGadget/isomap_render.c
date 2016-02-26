@@ -70,9 +70,9 @@ void isomap_render_cleanup( void ) {
    }
 }
 
-static void isomap_render_select_tile(
+static void isomap_render_select_terrain(
    const struct isomap_tile* tile,
-   const ISOMAP_RENDER_ROTATE rotation,
+   const GRAPHICS_ROTATE rotation,
    struct isomap_render_texture* texture_selection
 ) {
    ISOMAP_RENDER_BITWISE sides_sum = 0;
@@ -114,7 +114,7 @@ static void isomap_render_select_tile(
    /* Translate the side sums for the current rotation. Maybe there are       *
     * better ways to do this, but we can find them some other time.           */
    switch( rotation ) {
-      case ISOMAP_RENDER_ROTATE_270:
+      case GRAPHICS_ROTATE_270:
          test_sum = sides_sum & ISOMAP_RENDER_BITWISE_UP;
          if( 0 != test_sum ) {
             temp_sum += ISOMAP_RENDER_BITWISE_RIGHT; }
@@ -130,7 +130,7 @@ static void isomap_render_select_tile(
          sides_sum = temp_sum;
          break;
 
-      case ISOMAP_RENDER_ROTATE_180:
+      case GRAPHICS_ROTATE_180:
          test_sum = sides_sum & ISOMAP_RENDER_BITWISE_UP;
          if( 0 != test_sum ) {
             temp_sum += ISOMAP_RENDER_BITWISE_DOWN;
@@ -151,7 +151,7 @@ static void isomap_render_select_tile(
          break;
 
 
-      case ISOMAP_RENDER_ROTATE_90:
+      case GRAPHICS_ROTATE_90:
          test_sum = sides_sum & ISOMAP_RENDER_BITWISE_UP;
          if( 0 != test_sum ) {
             temp_sum += ISOMAP_RENDER_BITWISE_LEFT;
@@ -195,7 +195,7 @@ static void isomap_render_select_tile(
 void isomap_render_draw_tile(
    const struct isomap_tile* tile,
    const SDL_Rect* viewport, 
-   const ISOMAP_RENDER_ROTATE rotation
+   const GRAPHICS_ROTATE rotation
 ) {
    int i = 0;
    uint32_t draw_x = tile->x;
@@ -203,7 +203,7 @@ void isomap_render_draw_tile(
    SDL_Texture* sprite_texture = NULL;
    struct isomap_render_texture texture_selection;
 
-   isomap_render_select_tile( tile, rotation, &texture_selection );
+   isomap_render_select_terrain( tile, rotation, &texture_selection );
 
    graphics_transform_isometric(
       tile->x,
@@ -239,7 +239,7 @@ void isomap_render_draw_unit(
    const struct units_unit* unit,
    const uint8_t ani_frame,
    const SDL_Rect* viewport,
-   const ISOMAP_RENDER_ROTATE rotation
+   const GRAPHICS_ROTATE rotation
 ) {
    int i = 0, x, y;
    SDL_Texture* sprite_texture = NULL;
