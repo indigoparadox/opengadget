@@ -10,8 +10,13 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
    SDL_Rect viewport;
    GRAPHICS_ROTATE rotation = GRAPHICS_ROTATE_0;
    SDL_Event event;
+   int animation_frame = 0;
+   bstring new_title = NULL;
 
-   graphics_set_title( config->map_name );
+   new_title = bfromcstr( "" );
+   bassignformat( new_title, "%s - %d", bdata( config->map_name ), rotation );
+
+   graphics_set_title( new_title );
 
    memset( &viewport, '\0', sizeof( SDL_Rect ) );
 
@@ -39,6 +44,8 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
                      if( 3 < rotation ) {
                         rotation = 0;
                      }
+                     bassignformat( new_title, "%s - %d", bdata( config->map_name ), rotation );
+                     graphics_set_title( new_title );
                      break;
 
                   case SDLK_RIGHT:
@@ -89,7 +96,7 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
          if( NULL != config->map->tiles[i].unit ) {
             isomap_render_draw_unit(
                config->map->tiles[i].unit,
-               0,
+               animation_frame,
                &viewport,
                rotation
                );
@@ -97,6 +104,11 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
       }
 
       graphics_end_draw();
+
+      animation_frame++;
+      if( 3 < animation_frame ) {
+         animation_frame = 0;
+      }
 
       graphics_sleep( 1000 );
    }
