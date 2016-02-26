@@ -54,26 +54,6 @@ struct isomap_render_texture {
          ) \
       )
 
-/* TODO: Maybe make this smarter with XOR at some point, but don't            *
- * overcomplicate right now.                                                  */
-#define isomap_render_tile_rotate( x, y, width, height, temp, rotation ) \
-   switch( rotation ) { \
-      case ISOMAP_RENDER_ROTATE_90: \
-         temp = y; \
-         y = height - x; \
-         x = temp; \
-         break; \
-      case ISOMAP_RENDER_ROTATE_180: \
-         x = width - x; \
-         y = height - y; \
-         break; \
-      case ISOMAP_RENDER_ROTATE_270: \
-         temp = x; \
-         x = width - y; \
-         y = temp; \
-         break; \
-   }
-
 OG_RETVAL isomap_render_load_textures( const bstring data_path );
 void isomap_render_cleanup( void );
 void isomap_render_draw_tile(
