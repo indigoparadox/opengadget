@@ -185,7 +185,6 @@ void graphics_transform_isometric(
    const SDL_Rect* viewport,
    int rotation
 ) {
-
    int i = 0, transformed_x, transformed_y;
 
    switch( rotation ) {
@@ -195,7 +194,7 @@ void graphics_transform_isometric(
          break;
       case GRAPHICS_ROTATE_90:
          transformed_y = map_height - tile_x;
-         transformed_x = tile_x;
+         transformed_x = tile_y;
          break;
       case GRAPHICS_ROTATE_180:
          transformed_x = map_width - tile_x;
