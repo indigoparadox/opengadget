@@ -324,11 +324,11 @@ void isomap_render_draw_tile(
    if( NULL != tile->coords ) {
       coords_src.x = 0;
       coords_src.y = 0;
-      coords_src.w = 16;
+      coords_src.w = 24;
       coords_src.h = 8;
       coords_dst.x = screen_x;
       coords_dst.y = screen_y;
-      coords_dst.w = 16;
+      coords_dst.w = 24;
       coords_dst.h = 8;
       graphics_draw( tile->coords, &coords_src, &coords_dst );
    }
