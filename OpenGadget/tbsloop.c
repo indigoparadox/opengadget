@@ -63,6 +63,23 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
                   &viewport,
                   rotation
                );
+
+#if 0
+               graphics_isometric_tile_rotate(
+                  &mouse_tile_x,
+                  &mouse_tile_y,
+                  config->map->width,
+                  config->map->height,
+                  rotation
+               );
+//#else
+               if( GRAPHICS_ROTATE_90 == rotation || GRAPHICS_ROTATE_270 == rotation ) {
+                  mouse_tile_x = mouse_tile_x ^ mouse_tile_y;
+                  mouse_tile_y = mouse_tile_x ^ mouse_tile_y;
+                  mouse_tile_x = mouse_tile_x ^ mouse_tile_y;
+               }
+#endif
+
 #ifdef DEBUG
                bassignformat( new_title, "%s - %d - %d, %d", bdata( config->map_name ), rotation, mouse_tile_x, mouse_tile_y );
                graphics_set_title( new_title );
