@@ -22,6 +22,10 @@
 #include "dep/arckogako.h"
 #include "units.h"
 
+#if DEBUG
+#include "graphics.h"
+#endif /* DEBUG */
+
 #define ISOMAP_UNIT_DATA_SIZE 32
 
 #define ISOMAP_BUILDINGS_TILES_OFFSET 0x14
@@ -76,6 +80,9 @@ struct isomap_tile {
    uint32_t y;
    struct units_unit* unit;
    struct isomap* map;
+#if DEBUG
+   SDL_Surface* coords;
+#endif /* DEBUG */
 };
 
 struct isomap {

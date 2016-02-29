@@ -273,17 +273,28 @@ void isomap_render_draw_tile(
    int i = 0, screen_x, screen_y, tile_x, tile_y;
    SDL_Texture* sprite_texture = NULL;
    struct isomap_render_texture texture_selection;
+#ifdef DEBUG
+   SDL_Rect coords_src;
+   SDL_Rect coords_dst;
+#endif /* DEBUG */
 
    tile_x = tile->x;
    tile_y = tile->y;
 
    isomap_render_select_terrain( tile, rotation, &texture_selection );
 
+   graphics_isometric_tile_rotate(
+      &tile_x, &tile_y,
+      tile->map->width,
+      tile->map->height,
+      rotation
+   );
+
    graphics_transform_isometric(
-      tile->x,
-      tile->y,
-      screen_x,
-      screen_y,
+      tile_x,
+      tile_y,
+      &screen_x,
+      &screen_y,
       viewport
    );
 
@@ -295,7 +306,7 @@ void isomap_render_draw_tile(
 
    /* Don't draw stuff off-screen. */
    if(
-      0 > screen_x || 0 > screen_y ||
+      -GRAPHICS_TILE_WIDTH > screen_x || -GRAPHICS_TILE_WIDTH > screen_y ||
       GRAPHICS_SCREEN_WIDTH < screen_x || GRAPHICS_SCREEN_HEIGHT < screen_y
    ) {
       goto cleanup;
@@ -308,6 +319,20 @@ void isomap_render_draw_tile(
       screen_x,
       screen_y
    );
+
+#if DEBUG
+   if( NULL != tile->coords ) {
+      coords_src.x = 0;
+      coords_src.y = 0;
+      coords_src.w = 16;
+      coords_src.h = 8;
+      coords_dst.x = screen_x;
+      coords_dst.y = screen_y;
+      coords_dst.w = 16;
+      coords_dst.h = 8;
+      graphics_draw( tile->coords, &coords_src, &coords_dst );
+   }
+#endif
 
 cleanup:
 
@@ -330,17 +355,17 @@ void isomap_render_draw_unit(
    isomap_render_select_unit( unit, ani_frame, rotation, &texture_selection );
 
    graphics_isometric_tile_rotate( 
-      tile_x, tile_y, 
+      &tile_x, &tile_y, 
       unit->tile->map->width, 
       unit->tile->map->height,
       rotation
    );
 
    graphics_transform_isometric(
-      unit->tile->x,
-      unit->tile->y,
-      screen_x,
-      screen_y,
+      tile_x,
+      tile_y,
+      &screen_x,
+      &screen_y,
       viewport
    );
 
@@ -351,7 +376,7 @@ void isomap_render_draw_unit(
 
    /* Don't draw stuff off-screen. */
    if(
-      0 > screen_x || 0 > screen_y ||
+      -GRAPHICS_TILE_WIDTH > screen_x || -GRAPHICS_TILE_WIDTH > screen_y ||
       GRAPHICS_SCREEN_WIDTH < screen_x || GRAPHICS_SCREEN_HEIGHT < screen_y
    ) {
       goto cleanup;
@@ -370,6 +395,52 @@ cleanup:
    return;
 }
 
+void isomap_render_draw_cursor(
+   int mouse_tile_x,
+   int mouse_tile_y,
+   const struct isomap* map,
+   const uint8_t animation_frame,
+   const SDL_Rect* viewport,
+   const GRAPHICS_ROTATE rotation
+) {
+   int mouse_draw_x = 0, mouse_draw_y = 0;
+
+   graphics_isometric_tile_rotate(
+      &mouse_tile_x, &mouse_tile_y,
+      map->width,
+      map->height,
+      rotation
+   );
+
+   graphics_transform_isometric(
+      mouse_tile_x,
+      mouse_tile_y,
+      &mouse_draw_x,
+      &mouse_draw_y,
+      viewport
+   );
+
+   /* Don't draw stuff off-screen. */
+   if(
+      -GRAPHICS_TILE_WIDTH > mouse_draw_x || -GRAPHICS_TILE_WIDTH > mouse_draw_y ||
+      GRAPHICS_SCREEN_WIDTH < mouse_draw_x || GRAPHICS_SCREEN_HEIGHT < mouse_draw_y
+      ) {
+      goto cleanup;
+   }
+
+   graphics_draw_tile(
+      isomap_render_ui_textures[ISOMAP_RENDER_UI_MAPCURSOR],
+      0,
+      0,
+      mouse_draw_x,
+      mouse_draw_y
+   );
+
+cleanup:
+
+   return;
+}
+
 void isomap_render_loop( 
    const struct isomap* map, 
    const SDL_Rect* viewport, 
@@ -380,18 +451,25 @@ void isomap_render_loop(
    int i, j, x, y;
    static int previous_x = -1;
    static int previous_y = -1;
+   static GRAPHICS_ROTATE previous_r = 0;
    static int animation_frame = 0;
    OG_BOOL redraw_all = OG_FALSE;
+#if DEBUG
+   bstring coords = NULL;
 
-   if( previous_x != viewport->x || previous_y != viewport->y ) {
+   coords = bfromcstr( "" );
+#endif /* DEBUG */
+
+   if( previous_x != viewport->x || previous_y != viewport->y || previous_r != rotation ) {
       graphics_clear();
       redraw_all = OG_TRUE;
       previous_x = viewport->x;
       previous_y = viewport->y;
+      previous_r = rotation;
    }
    
    if( redraw_all ) {
-      graphics_draw_bg( isomap_render_get_texture( ISOMAP_RENDER_TEXTURE_TYPE_UI, ISOMAP_RENDER_UI_BGTILE ) );
+      graphics_draw_bg( isomap_render_ui_textures[ISOMAP_RENDER_UI_BGTILE] ); 
    }
 
    for( i = map->tiles_count - 1 ; 0 <= i ; i-- ) {
@@ -399,11 +477,27 @@ void isomap_render_loop(
        * tiles farther back won't be drawn over tiles closer to the front.    */
       isomap_render_tile_draw_index( i, j, x, y, map, rotation );
 
+#if DEBUG
+      /* TODO: Clean these up, somewhere. */
+      if( NULL == map->tiles[j].coords ) {
+         bassignformat( coords, "%d, %d", map->tiles[j].x, map->tiles[j].y );
+         map->tiles[j].coords = graphics_text_create( coords, GRAPHICS_FONT_SANS, 8 );
+      }
+#endif
+
+      /* Draw the terrain. */
       isomap_render_draw_tile(
          &(map->tiles[j]),
          viewport,
          rotation
       );
+
+      /* Draw the cursor if this tile is highlighted. */
+      if( mouse_tile_x == map->tiles[j].x && mouse_tile_y == map->tiles[j].y ) {
+         isomap_render_draw_cursor( mouse_tile_x, mouse_tile_y, map, animation_frame, viewport, rotation );
+      }
+
+      /* Draw the unit on this tile if there is one. */
       if( NULL != map->tiles[j].unit ) {
          isomap_render_draw_unit(
             map->tiles[j].unit,
@@ -420,6 +514,7 @@ void isomap_render_loop(
    }
 }
 
+#if 0
 SDL_Texture* isomap_render_get_texture( ISOMAP_RENDER_TEXTURE_TYPE type, int index ) {
    switch( type ) {
       case ISOMAP_RENDER_TEXTURE_TYPE_TERRAIN:
@@ -428,5 +523,8 @@ SDL_Texture* isomap_render_get_texture( ISOMAP_RENDER_TEXTURE_TYPE type, int ind
          return isomap_render_unit_textures[index];
       case ISOMAP_RENDER_TEXTURE_TYPE_UI:
          return isomap_render_ui_textures[index];
+      default:
+         return NULL;
    }
 }
+#endif

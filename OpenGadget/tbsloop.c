@@ -26,7 +26,7 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
    GRAPHICS_ROTATE rotation = GRAPHICS_ROTATE_0;
    SDL_Event event;
    bstring new_title = NULL;
-   int mouse_tile_x = 0, mouse_tile_y = 0, mouse_draw_x, mouse_draw_y;
+   int mouse_tile_x = 0, mouse_tile_y = 0;
 
    new_title = bfromcstr( "" );
    bassignformat( new_title, "%s - %d", bdata( config->map_name ), rotation );
@@ -63,6 +63,10 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
                   &viewport,
                   rotation
                );
+#ifdef DEBUG
+               bassignformat( new_title, "%s - %d - %d, %d", bdata( config->map_name ), rotation, mouse_tile_x, mouse_tile_y );
+               graphics_set_title( new_title );
+#endif
                break;
 
             case SDL_KEYDOWN:
@@ -101,22 +105,6 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
       }
 
       isomap_render_loop( config->map, &viewport, rotation, mouse_tile_x, mouse_tile_y );
-
-      graphics_transform_isometric(
-         mouse_tile_x,
-         mouse_tile_y,
-         mouse_draw_x,
-         mouse_draw_y,
-         (&viewport)
-      );
-
-      graphics_draw_tile(
-         isomap_render_get_texture( ISOMAP_RENDER_TEXTURE_TYPE_UI, ISOMAP_RENDER_UI_MAPCURSOR ),
-         0,
-         0,
-         mouse_draw_x,
-         mouse_draw_y
-      );
 
       graphics_end_draw();
 

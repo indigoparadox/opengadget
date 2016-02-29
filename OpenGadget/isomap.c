@@ -64,6 +64,9 @@ struct isomap* isomap_load_map( uint8_t* map_data, uint32_t map_data_len ) {
          isomap_out->tiles[index].y = j;
          isomap_out->tiles[index].map = isomap_out;
          isomap_out->tiles[index].index = index;
+#if DEBUG
+         isomap_out->tiles[index].coords = NULL;
+#endif /* DEBUG */
          index++;
       }
    }
