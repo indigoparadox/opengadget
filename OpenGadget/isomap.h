@@ -80,6 +80,7 @@ struct isomap_tile {
    uint32_t y;
    struct units_unit* unit;
    struct isomap* map;
+   OG_BOOL movable;
 #if DEBUG
    SDL_Surface* coords;
 #endif /* DEBUG */

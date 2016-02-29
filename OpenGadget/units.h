@@ -61,6 +61,7 @@ struct units_unit {
    uint32_t team;
    struct isomap_tile* tile;
    UNITS_FACING facing;
+   OG_BOOL selected;
 };
 
 #endif /* UNITS_H */

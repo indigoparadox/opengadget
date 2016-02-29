@@ -56,7 +56,11 @@ int main( int argc, char* argv[] ) {
       map_data_path = bformat( "%s\\map.pak", argv[1] );
 
       pak_file = fopen( bdata( map_data_path ), "rb" );
-      /* TODO: Error handling. */
+      if( NULL == pak_file ) {
+         SDL_LogCritical( SDL_LOG_CATEGORY_APPLICATION, "Unable to open map. Aborting." );
+         retval = 8;
+         goto cleanup;
+      }
 
       map_pak = pakopener_try_open( pak_file );
       if( NULL == map_pak ) {
@@ -78,7 +82,11 @@ int main( int argc, char* argv[] ) {
       map_config.map = isomap_load_map( map_data, entry->unpacked_size );
    } else {
       pak_file = fopen( bdata( data_path ), "rb" );
-      /* TODO: Error handling. */
+      if( NULL == pak_file ) {
+         SDL_LogCritical( SDL_LOG_CATEGORY_APPLICATION, "Unable to open map. Aborting." );
+         retval = 8;
+         goto cleanup;
+      }
 
       fseek( pak_file, 0, SEEK_END );
       data_size = ftell( pak_file );
