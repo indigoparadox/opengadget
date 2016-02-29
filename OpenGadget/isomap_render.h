@@ -85,6 +85,26 @@ struct isomap_render_texture {
          ) \
       )
 
+#define isomap_render_tile_draw_index( index_in, index_out, x, y, map, rotation ) \
+   x = index_in % map->width; \
+   y = index_in / map->width; \
+   switch( rotation ) { \
+         case GRAPHICS_ROTATE_0: \
+            index_out = index_in; \
+            break; \
+         case GRAPHICS_ROTATE_90: \
+            index_out = (y * map->width) + (map->width - x - 1); \
+            break; \
+         case GRAPHICS_ROTATE_180: \
+            index_out = map->tiles_count - index_in - 1; \
+            break; \
+         case GRAPHICS_ROTATE_270: \
+            index_out = map->tiles_count - \
+               ((y * map->width) + \
+               (map->width - x - 1)) - 1; \
+            break; \
+   }
+
 OG_RETVAL isomap_render_load_textures( const bstring data_path );
 void isomap_render_cleanup( void );
 void isomap_render_draw_tile(
@@ -98,7 +118,13 @@ void isomap_render_draw_unit(
    const SDL_Rect* viewport,
    const GRAPHICS_ROTATE rotation
 );
-void isomap_render_loop( const struct isomap* map, const SDL_Rect* viewport, GRAPHICS_ROTATE rotation );
+void isomap_render_loop(
+   const struct isomap* map,
+   const SDL_Rect* viewport,
+   GRAPHICS_ROTATE rotation,
+   int mouse_tile_x,
+   int mouse_tile_y
+);
 SDL_Texture* isomap_render_get_texture( ISOMAP_RENDER_TEXTURE_TYPE type, int index );
 
 #endif /* ISOMAP_RENDER_H */

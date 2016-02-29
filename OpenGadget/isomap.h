@@ -76,6 +76,7 @@ struct isomap_tile {
    uint32_t y;
    struct units_unit* unit;
    struct isomap* map;
+   OG_BOOL redraw;
 };
 
 struct isomap {

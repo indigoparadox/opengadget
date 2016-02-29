@@ -31,7 +31,7 @@ OG_RETVAL isomap_render_load_textures( const bstring data_path ) {
    bstring gfx_data_path = NULL;
    FILE* gfx_data_file = NULL;
    struct pak_file* gfx_data_pak = NULL;
-   int i, j;
+   int i;
    struct tagbstring ui_cursor = bsStatic( "RS_MAPCUR" );
    struct tagbstring ui_marker = bsStatic( "RS_MAPMARK" );
    struct tagbstring ui_bgtile = bsStatic( "UI_ROGOTILE" );
@@ -128,8 +128,8 @@ static void isomap_render_select_terrain(
    ISOMAP_RENDER_BITWISE sides_sum = 0;
    ISOMAP_RENDER_BITWISE test_sum = 0;
    ISOMAP_RENDER_BITWISE temp_sum = 0;
-   struct isomap_tile* current_tile;
-   struct isomap_tile* test_tile;
+   const struct isomap_tile* current_tile;
+   const struct isomap_tile* test_tile;
    uint32_t current_x = tile->x;
    uint32_t current_y = tile->map->width - tile->y - 1;
 
@@ -349,46 +349,67 @@ cleanup:
    return;
 }
 
-void isomap_render_loop( const struct isomap* map, const SDL_Rect* viewport, GRAPHICS_ROTATE rotation ) {
-   int i, j, render_x, render_y;
+void isomap_render_loop( 
+   const struct isomap* map, 
+   const SDL_Rect* viewport, 
+   GRAPHICS_ROTATE rotation,
+   int mouse_tile_x,
+   int mouse_tile_y
+) {
+   int i, j, x, y;
+   static int previous_x = -1;
+   static int previous_y = -1;
    static int animation_frame = 0;
+   OG_BOOL redraw_all = OG_FALSE;
+
+   if( previous_x != viewport->x || previous_y != viewport->y ) {
+      graphics_clear();
+      redraw_all = OG_TRUE;
+      previous_x = viewport->x;
+      previous_y = viewport->y;
+   }
    
-   graphics_draw_bg( isomap_render_get_texture( ISOMAP_RENDER_TEXTURE_TYPE_UI, ISOMAP_RENDER_UI_BGTILE ) );
+   if( redraw_all ) {
+      graphics_draw_bg( isomap_render_get_texture( ISOMAP_RENDER_TEXTURE_TYPE_UI, ISOMAP_RENDER_UI_BGTILE ) );
+   }
 
    for( i = map->tiles_count - 1 ; 0 <= i ; i-- ) {
-      switch( rotation ) {
-         case GRAPHICS_ROTATE_0:
-            j = i;
-            break;
-         case GRAPHICS_ROTATE_90:
-            render_x = i % map->width;
-            render_y = i / map->width;
-            j = (render_y * map->width) + (map->width - render_x - 1);
-            break;
-         case GRAPHICS_ROTATE_180:
-            j = map->tiles_count - i - 1;
-            break;
-         case GRAPHICS_ROTATE_270:
-            render_x = i % map->width;
-            render_y = i / map->width;
-            j = map->tiles_count - ((render_y * map->width) + (map->width - render_x - 1)) - 1;
-            break;
+      /* Determine the tile draw order based on current rotation. This way,   *
+       * tiles farther back won't be drawn over tiles closer to the front.    */
+      isomap_render_tile_draw_index( i, j, x, y, map, rotation );
+
+#ifdef DEBUG
+      assert( 0 < x );
+      assert( 0 < y );
+#endif /* DEBUG */
+
+      /* Only redraw tiles with units (for animation) or dirty tiles. */
+      if( !map->tiles[j].redraw && !redraw_all && NULL == map->tiles[j].unit ) {
+         continue;
       }
+
+      /* Mark all nearby tiles as dirty. */
+      /* TODO: Only mark tiles behind this one. */
+      map->tiles[isomap_get_tile( x - 1, y - 1, map )].redraw = OG_TRUE;
+      map->tiles[isomap_get_tile( x + 1, y - 1, map )].redraw = OG_TRUE;
+      map->tiles[isomap_get_tile( x - 1, y + 1, map )].redraw = OG_TRUE;
+      map->tiles[isomap_get_tile( x + 1, y + 1, map )].redraw = OG_TRUE;
 
       isomap_render_draw_tile(
          &(map->tiles[j]),
          viewport,
          rotation
-         );
+      );
       if( NULL != map->tiles[j].unit ) {
          isomap_render_draw_unit(
             map->tiles[j].unit,
             animation_frame,
             viewport,
             rotation
-            );
+         );
       }
 
+      map->tiles[j].redraw = OG_FALSE;
    }
 
    animation_frame++;
