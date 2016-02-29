@@ -63,7 +63,6 @@ struct isomap* isomap_load_map( uint8_t* map_data, uint32_t map_data_len ) {
          isomap_out->tiles[index].x = i;
          isomap_out->tiles[index].y = j;
          isomap_out->tiles[index].map = isomap_out;
-         isomap_out->tiles[index].redraw = OG_TRUE;
          isomap_out->tiles[index].index = index;
          index++;
       }

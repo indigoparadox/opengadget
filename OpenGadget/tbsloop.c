@@ -105,12 +105,9 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
       graphics_transform_isometric(
          mouse_tile_x,
          mouse_tile_y,
-         &mouse_draw_x,
-         &mouse_draw_y,
-         config->map->width,
-         config->map->height,
-         &viewport,
-         rotation
+         mouse_draw_x,
+         mouse_draw_y,
+         (&viewport)
       );
 
       graphics_draw_tile(
@@ -123,7 +120,7 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
 
       graphics_end_draw();
 
-      graphics_sleep( 250 );
+      graphics_sleep( 50 );
    }
 
 cleanup:

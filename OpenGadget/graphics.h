@@ -64,6 +64,12 @@ typedef enum {
          break; \
    }
 
+#define graphics_transform_isometric( tile_x, tile_y, screen_x, screen_y, viewport ) \
+   screen_x = viewport->x + (tile_x * GRAPHICS_TILE_WIDTH / 2) + \
+      (tile_y * GRAPHICS_TILE_WIDTH / 2); \
+   screen_y = viewport->y + ((tile_y * GRAPHICS_TILE_OFFSET_X / 2) - \
+      (tile_x * GRAPHICS_TILE_OFFSET_X / 2));
+
 OG_RETVAL graphics_init( void );
 void graphics_cleanup( void );
 void graphics_set_title( const bstring title );
@@ -73,16 +79,6 @@ void graphics_sleep( const int milliseconds );
 SDL_Texture* graphics_image_load( const bstring image_name, const struct pak_file* pak );
 void graphics_draw_tile( const SDL_Texture* texture, const int src_x, const int src_y, const int dest_x, const int dest_y );
 void graphics_draw_bg( SDL_Texture* background );
-void graphics_transform_isometric(
-   int tile_x,
-   int tile_y,
-   int* screen_x,
-   int* screen_y,
-   int map_width,
-   int map_height,
-   const SDL_Rect* viewport,
-   int rotation
-);
 void graphics_transform_isometric_reverse(
    int* tile_x,
    int* tile_y,

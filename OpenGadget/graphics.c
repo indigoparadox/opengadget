@@ -207,26 +207,6 @@ void graphics_draw_bg( SDL_Texture* background ) {
    }
 }
 
-void graphics_transform_isometric( 
-   int tile_x,
-   int tile_y,
-   int* screen_x,
-   int* screen_y,
-   int map_width,
-   int map_height,
-   const SDL_Rect* viewport,
-   int rotation
-) {
-   int i = 0;
-
-   graphics_isometric_tile_rotate( tile_x, tile_y, map_width, map_height, rotation );
-
-   *screen_x = viewport->x + (tile_x * GRAPHICS_TILE_WIDTH / 2) +
-      (tile_y * GRAPHICS_TILE_WIDTH / 2);
-   *screen_y = viewport->y + ((tile_y * GRAPHICS_TILE_OFFSET_X / 2) -
-      (tile_x * GRAPHICS_TILE_OFFSET_X / 2));
-}
-
 void graphics_transform_isometric_reverse(
    int* tile_x,
    int* tile_y,

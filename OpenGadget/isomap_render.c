@@ -270,23 +270,21 @@ void isomap_render_draw_tile(
    const SDL_Rect* viewport, 
    const GRAPHICS_ROTATE rotation
 ) {
-   int i = 0;
-   uint32_t draw_x = tile->x;
-   uint32_t draw_y = tile->y;
+   int i = 0, screen_x, screen_y, tile_x, tile_y;
    SDL_Texture* sprite_texture = NULL;
    struct isomap_render_texture texture_selection;
+
+   tile_x = tile->x;
+   tile_y = tile->y;
 
    isomap_render_select_terrain( tile, rotation, &texture_selection );
 
    graphics_transform_isometric(
       tile->x,
       tile->y,
-      &draw_x,
-      &draw_y,
-      tile->map->width,
-      tile->map->height,
-      viewport,
-      rotation
+      screen_x,
+      screen_y,
+      viewport
    );
 
    sprite_texture = isomap_render_terrain_textures[texture_selection.texture_index];
@@ -295,12 +293,20 @@ void isomap_render_draw_tile(
       goto cleanup;
    }
 
+   /* Don't draw stuff off-screen. */
+   if(
+      0 > screen_x || 0 > screen_y ||
+      GRAPHICS_SCREEN_WIDTH < screen_x || GRAPHICS_SCREEN_HEIGHT < screen_y
+   ) {
+      goto cleanup;
+   }
+
    graphics_draw_tile(
       sprite_texture,
       texture_selection.sprite_rect.x,
       texture_selection.sprite_rect.y,
-      draw_x,
-      draw_y
+      screen_x,
+      screen_y
    );
 
 cleanup:
@@ -314,21 +320,28 @@ void isomap_render_draw_unit(
    const SDL_Rect* viewport,
    const GRAPHICS_ROTATE rotation
 ) {
-   int i = 0, x, y;
+   int i = 0, screen_x, screen_y, tile_x, tile_y;
    SDL_Texture* sprite_texture = NULL;
    struct isomap_render_texture texture_selection;
 
+   tile_x = unit->tile->x;
+   tile_y = unit->tile->y;
+
    isomap_render_select_unit( unit, ani_frame, rotation, &texture_selection );
-   
+
+   graphics_isometric_tile_rotate( 
+      tile_x, tile_y, 
+      unit->tile->map->width, 
+      unit->tile->map->height,
+      rotation
+   );
+
    graphics_transform_isometric(
       unit->tile->x,
       unit->tile->y,
-      &x,
-      &y,
-      unit->tile->map->width,
-      unit->tile->map->height,
-      viewport,
-      rotation
+      screen_x,
+      screen_y,
+      viewport
    );
 
    sprite_texture = isomap_render_unit_textures[texture_selection.texture_index];
@@ -336,12 +349,20 @@ void isomap_render_draw_unit(
       goto cleanup;
    }
 
+   /* Don't draw stuff off-screen. */
+   if(
+      0 > screen_x || 0 > screen_y ||
+      GRAPHICS_SCREEN_WIDTH < screen_x || GRAPHICS_SCREEN_HEIGHT < screen_y
+   ) {
+      goto cleanup;
+   }
+
    graphics_draw_tile(
       sprite_texture,
       texture_selection.sprite_rect.x,
       texture_selection.sprite_rect.y,
-      x,
-      y
+      screen_x,
+      screen_y
    );
 
 cleanup:
@@ -378,23 +399,6 @@ void isomap_render_loop(
        * tiles farther back won't be drawn over tiles closer to the front.    */
       isomap_render_tile_draw_index( i, j, x, y, map, rotation );
 
-#ifdef DEBUG
-      assert( 0 < x );
-      assert( 0 < y );
-#endif /* DEBUG */
-
-      /* Only redraw tiles with units (for animation) or dirty tiles. */
-      if( !map->tiles[j].redraw && !redraw_all && NULL == map->tiles[j].unit ) {
-         continue;
-      }
-
-      /* Mark all nearby tiles as dirty. */
-      /* TODO: Only mark tiles behind this one. */
-      map->tiles[isomap_get_tile( x - 1, y - 1, map )].redraw = OG_TRUE;
-      map->tiles[isomap_get_tile( x + 1, y - 1, map )].redraw = OG_TRUE;
-      map->tiles[isomap_get_tile( x - 1, y + 1, map )].redraw = OG_TRUE;
-      map->tiles[isomap_get_tile( x + 1, y + 1, map )].redraw = OG_TRUE;
-
       isomap_render_draw_tile(
          &(map->tiles[j]),
          viewport,
@@ -408,8 +412,6 @@ void isomap_render_loop(
             rotation
          );
       }
-
-      map->tiles[j].redraw = OG_FALSE;
    }
 
    animation_frame++;
