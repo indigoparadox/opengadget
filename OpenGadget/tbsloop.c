@@ -26,7 +26,7 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
    GRAPHICS_ROTATE rotation = GRAPHICS_ROTATE_0;
    SDL_Event event;
    bstring new_title = NULL;
-   int mouse_tile_x = 0, mouse_tile_y = 0;
+   int mouse_tile_x = 0, mouse_tile_y = 0, active_tile_index;
 
    new_title = bfromcstr( "" );
    bassignformat( new_title, "%s - %d", bdata( config->map_name ), rotation );
@@ -63,27 +63,37 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
                   &viewport,
                   rotation
                );
-
-#if 0
-               graphics_isometric_tile_rotate(
-                  &mouse_tile_x,
-                  &mouse_tile_y,
-                  config->map->width,
-                  config->map->height,
-                  rotation
-               );
-//#else
-               if( GRAPHICS_ROTATE_90 == rotation || GRAPHICS_ROTATE_270 == rotation ) {
-                  mouse_tile_x = mouse_tile_x ^ mouse_tile_y;
-                  mouse_tile_y = mouse_tile_x ^ mouse_tile_y;
-                  mouse_tile_x = mouse_tile_x ^ mouse_tile_y;
-               }
-#endif
-
 #ifdef DEBUG
                bassignformat( new_title, "%s - %d - %d, %d", bdata( config->map_name ), rotation, mouse_tile_x, mouse_tile_y );
                graphics_set_title( new_title );
 #endif
+               break;
+
+            case SDL_MOUSEBUTTONUP:
+               graphics_transform_isometric_reverse(
+                  &mouse_tile_x,
+                  &mouse_tile_y,
+                  event.button.x,
+                  event.button.y,
+                  config->map->width,
+                  config->map->height,
+                  &viewport,
+                  rotation
+               );
+
+               /* TODO: Figure out the reason for the mouse coordinate shift. */
+               //active_tile_index = (mouse_tile_y * config->map->height) + mouse_tile_x;
+               for( i = 0 ; config->map->tiles_count > i ; i++ ) {
+                  if( config->map->tiles[i].x == mouse_tile_x && config->map->tiles[i].y == mouse_tile_y ) {
+                     active_tile_index = i;
+                     break;
+                  }
+               }
+
+               if( NULL != config->map->tiles[active_tile_index].unit ) {
+                  units_select( config->map->tiles[active_tile_index].unit );
+               }
+
                break;
 
             case SDL_KEYDOWN:

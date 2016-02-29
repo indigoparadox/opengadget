@@ -58,21 +58,6 @@ typedef enum {
    ISOMAP_WEATHER_SNOW =    0x12
 } ISOMAP_WEATHER;
 
-#define isomap_rendian_copy( target, cursor ) \
-   for( i = 3 ; 0 <= i ; i-- ) { \
-      target += map_data[cursor + i]; \
-      target << 1; \
-   }
-
-#define isomap_find_section( section_name, map_bytes, map_bytes_len ) \
-   for( i = 0 ; i < map_bytes_len ; i++ ) { \
-      if( 0 == strncmp( &(map_bytes[i]), section_name, 4 ) ) { \
-         /* We found the start of the section. */ \
-         cursor = i; \
-         break; \
-      } \
-   }
-
 struct isomap_tile {
    int index;
    uint8_t terrain;
@@ -96,8 +81,26 @@ struct isomap {
    uint32_t tiles_count;
 };
 
+#define isomap_rendian_copy( target, cursor ) \
+   for( i = 3 ; 0 <= i ; i-- ) { \
+      target += map_data[cursor + i]; \
+      target << 1; \
+   }
+
+#define isomap_find_section( section_name, map_bytes, map_bytes_len ) \
+   for( i = 0 ; i < map_bytes_len ; i++ ) { \
+      if( 0 == strncmp( &(map_bytes[i]), section_name, 4 ) ) { \
+         /* We found the start of the section. */ \
+         cursor = i; \
+         break; \
+      } \
+   }
+
 #define isomap_get_tile( x, y, map ) ((x) * (map->width)) + (y)
 
 struct isomap* isomap_load_map( uint8_t* map_data, uint32_t map_data_len );
+#if 0
+int isomap_get_tile( int x, int y, struct isomap* map );
+#endif
 
 #endif /* ISOMAP_H */
