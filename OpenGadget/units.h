@@ -20,6 +20,8 @@
 
 #include <stdint.h>
 
+#include "defines.h"
+
 typedef enum {
    UNITS_TYPE_INFANTRY,
    UNITS_TYPE_H_INFANTRY,

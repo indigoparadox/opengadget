@@ -100,9 +100,7 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
 
       }
 
-      graphics_clear();
-
-      isomap_render_loop( config->map, &viewport, rotation );
+      isomap_render_loop( config->map, &viewport, rotation, mouse_tile_x, mouse_tile_y );
 
       graphics_transform_isometric(
          mouse_tile_x,
