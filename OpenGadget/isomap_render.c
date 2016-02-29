@@ -400,7 +400,6 @@ void isomap_render_draw_cursor(
    int mouse_tile_x,
    int mouse_tile_y,
    const struct isomap* map,
-   const uint8_t animation_frame,
    const SDL_Rect* viewport,
    const GRAPHICS_ROTATE rotation
 ) {
@@ -495,19 +494,19 @@ void isomap_render_loop(
 
       /* Draw the cursor if this tile is highlighted. */
       if( mouse_tile_x == map->tiles[j].x && mouse_tile_y == map->tiles[j].y ) {
-         isomap_render_draw_cursor( ISOMAP_RENDER_UI_MAPCURSOR, mouse_tile_x, mouse_tile_y, map, animation_frame, viewport, rotation );
+         isomap_render_draw_cursor( ISOMAP_RENDER_UI_MAPCURSOR, mouse_tile_x, mouse_tile_y, map, viewport, rotation );
       }
 
       /* Draw the "movable" square on this tile if a unit can move here. */
       if( map->tiles[j].movable ) {
-         isomap_render_draw_cursor( ISOMAP_RENDER_UI_MAPMARKER, mouse_tile_x, mouse_tile_y, map, animation_frame, viewport, rotation );
+         isomap_render_draw_cursor( ISOMAP_RENDER_UI_MAPMARKER, map->tiles[j].x, map->tiles[j].y, map, viewport, rotation );
       }
 
       /* Draw the unit on this tile if there is one. */
       if( NULL != map->tiles[j].unit ) {
          isomap_render_draw_unit(
             map->tiles[j].unit,
-            animation_frame,
+            animation_frame / 3,
             viewport,
             rotation
          );
@@ -515,7 +514,7 @@ void isomap_render_loop(
    }
 
    animation_frame++;
-   if( 3 < animation_frame ) {
+   if( 8 < animation_frame ) {
       animation_frame = 0;
    }
 }

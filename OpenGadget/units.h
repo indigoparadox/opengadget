@@ -21,6 +21,7 @@
 #include <stdint.h>
 
 #include "defines.h"
+#include "isomap.h"
 
 typedef enum {
    UNITS_TYPE_INFANTRY,
@@ -59,9 +60,12 @@ typedef enum {
 struct units_unit {
    uint32_t type;
    uint32_t team;
+   int range;
    struct isomap_tile* tile;
    UNITS_FACING facing;
    OG_BOOL selected;
 };
+
+void units_select( struct units_unit* unit );
 
 #endif /* UNITS_H */

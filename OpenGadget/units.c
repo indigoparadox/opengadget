@@ -16,3 +16,7 @@
 */
 
 #include "units.h"
+
+void units_select( struct units_unit* unit ) {
+   unit->tile->movable = OG_TRUE;
+}

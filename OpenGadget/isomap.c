@@ -99,6 +99,9 @@ struct isomap* isomap_load_map( uint8_t* map_data, uint32_t map_data_len ) {
       isomap_out->units[units_cursor].tile = 
          &(isomap_out->tiles[isomap_get_tile( x_tmp, y_tmp, isomap_out )]);
 
+      /* TODO: Vary this for each unit. */
+      isomap_out->units[units_cursor].range = 4;
+
       cursor += (4 * sizeof( uint32_t ));
    }
 
@@ -106,3 +109,15 @@ cleanup:
    
    return isomap_out;
 }
+
+#if 0
+int isomap_get_tile( int x, int y, struct isomap* map ) {
+   int i;
+
+   for( i = 0; i < map->tiles_count ; i++ ) {
+      if( map->tiles[i].x == x && map->tiles[i].y == y ) {
+         return i;
+      }
+   }
+}
+#endif
