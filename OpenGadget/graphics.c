@@ -20,8 +20,12 @@
 SDL_Renderer* opengadget_renderer = NULL;
 SDL_Window* opengadget_window = NULL;
 
+TTF_Font* graphics_fonts[GRAPHICS_FONT_MAX];
+
 OG_RETVAL graphics_init( void ) {
    OG_RETVAL retval = 0;
+
+   memset( graphics_fonts, '\0', sizeof( TTF_Font* ) * GRAPHICS_FONT_MAX );
 
    retval = SDL_Init( SDL_INIT_VIDEO );
    if( 0 != retval ) {
@@ -40,6 +44,12 @@ OG_RETVAL graphics_init( void ) {
    if( NULL == opengadget_renderer ) {
       SDL_LogCritical( SDL_LOG_CATEGORY_VIDEO, "SDL_CreateRenderer: %s", SDL_GetError() );
       retval = 4;
+      goto cleanup;
+   }
+
+   retval = TTF_Init();
+   if( 0 != retval ) {
+      /* TODO: Error message. */
       goto cleanup;
    }
 
@@ -165,6 +175,40 @@ cleanup:
    return texture_out;
 }
 
+SDL_Texture* graphics_text_create( bstring text, GRAPHICS_FONT font_index, int size ) {
+   SDL_Color white = { 0, 0, 0 };
+   SDL_Surface* message_surface = NULL;
+   SDL_Texture* message_texture = NULL;
+
+   if( NULL == graphics_fonts[font_index] ) {
+      switch( font_index ) {
+         case GRAPHICS_FONT_SANS:
+            graphics_fonts[font_index] = TTF_OpenFont( "C:\\Windows\\Fonts\\Arial.ttf", size );
+            break;
+      }
+   }
+
+   message_surface = TTF_RenderText_Solid( graphics_fonts[font_index], bdata( text ), white );
+   if( NULL == message_surface ) {
+      /* TODO: Error message. */
+      goto cleanup;
+   }
+
+   message_texture = SDL_CreateTextureFromSurface( opengadget_renderer, message_surface );
+
+cleanup:
+
+   if( NULL != message_surface ) {
+      SDL_FreeSurface( message_surface );
+   }
+
+   return message_texture;
+}
+
+void graphics_draw( SDL_Texture* texture, SDL_Rect* src_rect, SDL_Rect* dst_rect ) {
+   SDL_RenderCopy( opengadget_renderer, texture, src_rect, dst_rect );
+}
+
 void graphics_draw_tile( const SDL_Texture* texture, const int src_x, const int src_y, const int dest_x, const int dest_y ) {
    static SDL_Rect tile_rect;
    static SDL_Rect screen_rect;
@@ -188,7 +232,7 @@ void graphics_draw_tile( const SDL_Texture* texture, const int src_x, const int 
    screen_rect.x = dest_x;
    screen_rect.y = dest_y;
 
-   SDL_RenderCopy( opengadget_renderer, texture, &tile_rect, &screen_rect );
+   graphics_draw( texture, &tile_rect, &screen_rect );
 }
 
 void graphics_draw_bg( SDL_Texture* background ) {
@@ -202,7 +246,7 @@ void graphics_draw_bg( SDL_Texture* background ) {
    bg_dst.h = bg_src.h;
    for( bg_dst.x = 0 ; GRAPHICS_SCREEN_WIDTH > bg_dst.x ; bg_dst.x += bg_src.w ) {
       for( bg_dst.y = 0 ; GRAPHICS_SCREEN_HEIGHT > bg_dst.y ; bg_dst.y += bg_src.h ) {
-         SDL_RenderCopy( opengadget_renderer, background, &bg_src, &bg_dst );
+         graphics_draw( background, &bg_src, &bg_dst );
       }
    }
 }
@@ -226,10 +270,59 @@ void graphics_transform_isometric_reverse(
    *tile_x = ((screen_x + screen_y) / 2) + 1;
    *tile_y = ((screen_x - screen_y) / 2) - 2;
 
-   graphics_isometric_tile_rotate( *tile_x, *tile_y, map_width, map_height, rotation );
-
+   //graphics_isometric_tile_rotate( tile_x, tile_y, map_width, map_height, rotation );
+   /*
    if( GRAPHICS_ROTATE_270 == rotation || GRAPHICS_ROTATE_90 == rotation ) {
       *tile_x = map_width - *tile_x;
       *tile_y = map_height - *tile_y;
    }
+   */
+}
+
+/* TODO: Maybe make this smarter with XOR at some point, but don't            *
+ * overcomplicate right now.                                                  */
+#if 0
+#ifdef _MSC_VER
+__inline
+#else
+inline
+#endif /* _MSC_VER */
+#endif
+void graphics_isometric_tile_rotate(
+   int* x, int* y, int width, int height, GRAPHICS_ROTATE rotation
+) {
+   switch( rotation ) {
+      case GRAPHICS_ROTATE_90:
+         *x = *x ^ *y;
+         *y = *x ^ *y;
+         *x = *x ^ *y;
+         *y = height - *y;
+         break;
+      case GRAPHICS_ROTATE_180:
+         *x = width - *x;
+         *y = height - *y;
+         break;
+      case GRAPHICS_ROTATE_270:
+         *x = *x ^ *y;
+         *y = *x ^ *y;
+         *x = *x ^ *y;
+         *x = width - *x;
+         break;
+   }
+}
+
+#if 0
+#ifdef _MSC_VER
+__inline
+#else
+inline
+#endif /* _MSC_VER */
+#endif
+void graphics_transform_isometric(
+   int tile_x, int tile_y, int* screen_x, int* screen_y, const SDL_Rect* viewport
+) {
+   *screen_x = viewport->x + (tile_x * GRAPHICS_TILE_WIDTH / 2) + \
+      (tile_y * GRAPHICS_TILE_WIDTH / 2); \
+   *screen_y = viewport->y + ((tile_y * GRAPHICS_TILE_OFFSET_X / 2) - \
+         (tile_x * GRAPHICS_TILE_OFFSET_X / 2));
 }

@@ -20,6 +20,7 @@
 
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_ttf.h>
 
 #include "dep\bstrlib.h"
 #include "dep\arckogako.h"
@@ -42,33 +43,11 @@ typedef enum {
    GRAPHICS_ROTATE_270
 } GRAPHICS_ROTATE;
 
-/* TODO: Maybe make this smarter with XOR at some point, but don't            *
-* overcomplicate right now.                                                  */
-#define graphics_isometric_tile_rotate( x, y, width, height, rotation ) \
-   switch( rotation ) { \
-      case GRAPHICS_ROTATE_90: \
-         x = x ^ y; \
-         y = x ^ y; \
-         x = x ^ y; \
-         y = height - y; \
-         break; \
-      case GRAPHICS_ROTATE_180: \
-         x = width - x; \
-         y = height - y; \
-         break; \
-      case GRAPHICS_ROTATE_270: \
-         x = x ^ y; \
-         y = x ^ y; \
-         x = x ^ y; \
-         x = width - x; \
-         break; \
-   }
+typedef enum {
+   GRAPHICS_FONT_SANS,
 
-#define graphics_transform_isometric( tile_x, tile_y, screen_x, screen_y, viewport ) \
-   screen_x = viewport->x + (tile_x * GRAPHICS_TILE_WIDTH / 2) + \
-      (tile_y * GRAPHICS_TILE_WIDTH / 2); \
-   screen_y = viewport->y + ((tile_y * GRAPHICS_TILE_OFFSET_X / 2) - \
-      (tile_x * GRAPHICS_TILE_OFFSET_X / 2));
+   GRAPHICS_FONT_MAX
+} GRAPHICS_FONT;
 
 OG_RETVAL graphics_init( void );
 void graphics_cleanup( void );
@@ -77,6 +56,8 @@ void graphics_clear( void );
 void graphics_end_draw( void );
 void graphics_sleep( const int milliseconds );
 SDL_Texture* graphics_image_load( const bstring image_name, const struct pak_file* pak );
+SDL_Texture* graphics_text_create( bstring text, GRAPHICS_FONT font_index, int size );
+void graphics_draw( SDL_Texture* texture, SDL_Rect* src_rect, SDL_Rect* dst_rect );
 void graphics_draw_tile( const SDL_Texture* texture, const int src_x, const int src_y, const int dest_x, const int dest_y );
 void graphics_draw_bg( SDL_Texture* background );
 void graphics_transform_isometric_reverse(
@@ -88,6 +69,26 @@ void graphics_transform_isometric_reverse(
    int map_height,
    const SDL_Rect* viewport,
    int rotation
+);
+#if 0
+#ifdef _MSC_VER
+__inline
+#else
+inline
+#endif /* _MSC_VER */
+#endif
+void graphics_isometric_tile_rotate(
+   int* x, int* y, int width, int height, GRAPHICS_ROTATE rotation
+);
+#if 0
+#ifdef _MSC_VER
+__inline
+#else
+inline
+#endif /* _MSC_VER */
+#endif
+void graphics_transform_isometric(
+   int tile_x, int tile_y, int* screen_x, int* screen_y, const SDL_Rect* viewport
 );
 
 #endif /* GRAPHICS_H */
