@@ -125,6 +125,5 @@ void isomap_render_loop(
    int mouse_tile_x,
    int mouse_tile_y
 );
-SDL_Texture* isomap_render_get_texture( ISOMAP_RENDER_TEXTURE_TYPE type, int index );
 
 #endif /* ISOMAP_RENDER_H */

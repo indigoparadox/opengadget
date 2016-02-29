@@ -396,6 +396,7 @@ cleanup:
 }
 
 void isomap_render_draw_cursor(
+   ISOMAP_RENDER_UI cursor,
    int mouse_tile_x,
    int mouse_tile_y,
    const struct isomap* map,
@@ -424,12 +425,12 @@ void isomap_render_draw_cursor(
    if(
       -GRAPHICS_TILE_WIDTH > mouse_draw_x || -GRAPHICS_TILE_WIDTH > mouse_draw_y ||
       GRAPHICS_SCREEN_WIDTH < mouse_draw_x || GRAPHICS_SCREEN_HEIGHT < mouse_draw_y
-      ) {
+   ) {
       goto cleanup;
    }
 
    graphics_draw_tile(
-      isomap_render_ui_textures[ISOMAP_RENDER_UI_MAPCURSOR],
+      isomap_render_ui_textures[cursor],
       0,
       0,
       mouse_draw_x,
@@ -494,7 +495,12 @@ void isomap_render_loop(
 
       /* Draw the cursor if this tile is highlighted. */
       if( mouse_tile_x == map->tiles[j].x && mouse_tile_y == map->tiles[j].y ) {
-         isomap_render_draw_cursor( mouse_tile_x, mouse_tile_y, map, animation_frame, viewport, rotation );
+         isomap_render_draw_cursor( ISOMAP_RENDER_UI_MAPCURSOR, mouse_tile_x, mouse_tile_y, map, animation_frame, viewport, rotation );
+      }
+
+      /* Draw the "movable" square on this tile if a unit can move here. */
+      if( map->tiles[j].movable ) {
+         isomap_render_draw_cursor( ISOMAP_RENDER_UI_MAPMARKER, mouse_tile_x, mouse_tile_y, map, animation_frame, viewport, rotation );
       }
 
       /* Draw the unit on this tile if there is one. */
@@ -513,18 +519,3 @@ void isomap_render_loop(
       animation_frame = 0;
    }
 }
-
-#if 0
-SDL_Texture* isomap_render_get_texture( ISOMAP_RENDER_TEXTURE_TYPE type, int index ) {
-   switch( type ) {
-      case ISOMAP_RENDER_TEXTURE_TYPE_TERRAIN:
-         return isomap_render_terrain_textures[index];
-      case ISOMAP_RENDER_TEXTURE_TYPE_UNIT:
-         return isomap_render_unit_textures[index];
-      case ISOMAP_RENDER_TEXTURE_TYPE_UI:
-         return isomap_render_ui_textures[index];
-      default:
-         return NULL;
-   }
-}
-#endif
