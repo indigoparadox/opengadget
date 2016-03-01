@@ -34,11 +34,13 @@ struct isomap* isomap_load_map( uint8_t* map_data, uint32_t map_data_len ) {
    char* data_iter = NULL;
    struct isomap* isomap_out = NULL;
    uint8_t* isomap_tiles_x_cursor = NULL;
+   uint8_t enemy_team;
 
    isomap_out = calloc( 1, sizeof( struct isomap ) );
 
    /* This seems to have the same offset in all files I examined. */
    isomap_out->weather = map_data[64];
+   enemy_team = map_data[56];
 
    /* Parse the map dimensions. */
    isomap_find_section( "MAPF", map_data, map_data_len );
@@ -94,6 +96,9 @@ struct isomap* isomap_load_map( uint8_t* map_data, uint32_t map_data_len ) {
       cursor += sizeof( uint32_t );
 
       memcpy( &(isomap_out->units[units_cursor].team), &(map_data[cursor]), sizeof( uint32_t ) );
+      if( UNITS_TEAM_WHITE != isomap_out->units[units_cursor].team ) {
+         isomap_out->units[units_cursor].team = enemy_team;
+      }
       cursor += sizeof( uint32_t );
 
       memcpy( &x_tmp, &(map_data[cursor]), sizeof( uint32_t ) );
