@@ -56,10 +56,9 @@ struct isomap_render_texture {
 
 #define isomap_render_adjacent( tile_1, tile_2 ) \
       ( \
+         ((tile_1->map->tiles + tile_1->map->tiles_count) <= tile_2 || \
+            tile_1->map->tiles > tile_2 ) || \
          tile_1->terrain == tile_2->terrain || \
-         ( \
-            (tile_1->map->tiles + tile_1->map->tiles_count) <= tile_2 || \
-               tile_1->map->tiles > tile_2 ) || \
          ( \
             ISOMAP_TERRAIN_SEA == tile_1->terrain && ( \
                ISOMAP_TERRAIN_RIVER == tile_2->terrain || \
