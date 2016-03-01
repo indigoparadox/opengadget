@@ -27,6 +27,7 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
    SDL_Event event;
    bstring new_title = NULL;
    int mouse_tile_x = 0, mouse_tile_y = 0, active_tile_index;
+   struct units_unit* unit_test = NULL;
 
    new_title = bfromcstr( "" );
    bassignformat( new_title, "%s - %d", bdata( config->map_name ), rotation );
@@ -44,6 +45,8 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
    viewport.h = GRAPHICS_SCREEN_HEIGHT;
    viewport.x = 0;
    viewport.y = 200;
+
+   SDL_LogInfo( SDL_LOG_CATEGORY_APPLICATION, "Started strategy mode with map: %d x %d", config->map->width, config->map->height );
 
    while( 1 ) {
 
@@ -70,6 +73,8 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
                break;
 
             case SDL_MOUSEBUTTONUP:
+               active_tile_index = -1;
+
                graphics_transform_isometric_reverse(
                   &mouse_tile_x,
                   &mouse_tile_y,
@@ -90,8 +95,16 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
                   }
                }
 
-               if( NULL != config->map->tiles[active_tile_index].unit ) {
-                  units_select( config->map->tiles[active_tile_index].unit );
+               if( 0 <= active_tile_index ) {
+                  unit_test = config->map->tiles[active_tile_index].unit;
+                  if( NULL != unit_test ) {
+                     units_select( unit_test );
+                     units_walk_range(
+                        unit_test->tile,
+                        unit_test,
+                        units_get_mobility_range( unit_test )
+                     );
+                  }
                }
 
                break;

@@ -42,6 +42,12 @@ int main( int argc, char* argv[] ) {
    int i;
    struct pak_entry* entry;
 
+#ifdef DEBUG
+   SDL_LogSetAllPriority( SDL_LOG_PRIORITY_DEBUG );
+#endif
+
+   SDL_LogInfo( SDL_LOG_CATEGORY_APPLICATION, "OpenGadget started..." );
+
    data_path = bfromcstr( argv[1] );
 
    if( 0 == _access( bdata( data_path ), 0 ) ) {
@@ -52,6 +58,7 @@ int main( int argc, char* argv[] ) {
       goto cleanup;
    }
    
+   /* TODO: Abstract PAK loading so that we can standardize logging. */
    if( use_data_directory ) {
       map_data_path = bformat( "%s\\map.pak", argv[1] );
 
