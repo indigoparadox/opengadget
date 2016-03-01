@@ -130,34 +130,32 @@ static void isomap_render_select_terrain(
    ISOMAP_RENDER_BITWISE temp_sum = 0;
    const struct isomap_tile* current_tile;
    const struct isomap_tile* test_tile;
-   uint32_t current_x = tile->x;
-   uint32_t current_y = tile->map->width - tile->y - 1;
 
    texture_selection->texture_index = tile->terrain;
    current_tile = tile;
 
    /* Above */
-   test_tile = &(tile->map->tiles[isomap_get_tile( current_x + 1, current_y, tile->map )]);
+   test_tile = &(tile->map->tiles[isomap_get_tile( tile->x + 1, tile->y, tile->map )]);
    if( isomap_render_adjacent( current_tile, test_tile ) ) {
-      sides_sum += 1;
-   }
-
-   /* Left */
-   test_tile = &(tile->map->tiles[isomap_get_tile( current_x, current_y - 1, tile->map )]);
-   if( isomap_render_adjacent( current_tile, test_tile ) ) {
-      sides_sum += 2;
-   }
-
-   /* Below */
-   test_tile = &(tile->map->tiles[isomap_get_tile( current_x - 1, current_y, tile->map )]);
-   if( isomap_render_adjacent( current_tile, test_tile ) ) {
-      sides_sum += 4;
+      sides_sum += ISOMAP_RENDER_BITWISE_UP;
    }
 
    /* Right */
-   test_tile = &(tile->map->tiles[isomap_get_tile( current_x, current_y + 1, tile->map )]);
+   test_tile = &(tile->map->tiles[isomap_get_tile( tile->x, tile->y + 1, tile->map )]);
    if( isomap_render_adjacent( current_tile, test_tile ) ) {
-      sides_sum += 8;
+      sides_sum += ISOMAP_RENDER_BITWISE_RIGHT;
+   }
+
+   /* Below */
+   test_tile = &(tile->map->tiles[isomap_get_tile( tile->x - 1, tile->y, tile->map )]);
+   if( isomap_render_adjacent( current_tile, test_tile ) ) {
+      sides_sum += ISOMAP_RENDER_BITWISE_DOWN;
+   }
+
+   /* Left */
+   test_tile = &(tile->map->tiles[isomap_get_tile( tile->x, tile->y - 1, tile->map )]);
+   if( isomap_render_adjacent( current_tile, test_tile ) ) {
+      sides_sum += ISOMAP_RENDER_BITWISE_LEFT;
    }
 
    /* Translate the side sums for the current rotation. Maybe there are       *
@@ -475,7 +473,24 @@ void isomap_render_loop(
    for( i = map->tiles_count - 1 ; 0 <= i ; i-- ) {
       /* Determine the tile draw order based on current rotation. This way,   *
        * tiles farther back won't be drawn over tiles closer to the front.    */
-      isomap_render_tile_draw_index( i, j, x, y, map, rotation );
+      x = i % map->width;
+      y = i / map->width;
+      switch( rotation ) {
+            case GRAPHICS_ROTATE_270:
+               j = map->tiles_count - i - 1;
+               break;
+            case GRAPHICS_ROTATE_0:
+               j = map->tiles_count -
+                  ((y * map->width) +
+                     (map->width - x - 1)) - 1;
+               break;
+            case GRAPHICS_ROTATE_90:
+               j = i;
+               break;
+            case GRAPHICS_ROTATE_180:
+               j = (y * map->width) + (map->width - x - 1);
+               break;
+      }
 
 #if DEBUG
       /* TODO: Clean these up, somewhere. */
