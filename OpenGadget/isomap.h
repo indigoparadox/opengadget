@@ -99,7 +99,7 @@ struct isomap {
       } \
    }
 
-#define isomap_get_tile( x, y, map ) ((x) * (map->width)) + (y)
+#define isomap_get_tile( x, y, map ) ((y) * (map->width)) + (x)
 
 struct isomap* isomap_load_map( uint8_t* map_data, uint32_t map_data_len );
 #if 0

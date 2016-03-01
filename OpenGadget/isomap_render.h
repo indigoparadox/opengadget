@@ -85,26 +85,6 @@ struct isomap_render_texture {
          ) \
       )
 
-#define isomap_render_tile_draw_index( index_in, index_out, x, y, map, rotation ) \
-   x = index_in % map->width; \
-   y = index_in / map->width; \
-   switch( rotation ) { \
-         case GRAPHICS_ROTATE_0: \
-            index_out = index_in; \
-            break; \
-         case GRAPHICS_ROTATE_90: \
-            index_out = (y * map->width) + (map->width - x - 1); \
-            break; \
-         case GRAPHICS_ROTATE_180: \
-            index_out = map->tiles_count - index_in - 1; \
-            break; \
-         case GRAPHICS_ROTATE_270: \
-            index_out = map->tiles_count - \
-               ((y * map->width) + \
-               (map->width - x - 1)) - 1; \
-            break; \
-   }
-
 OG_RETVAL isomap_render_load_textures( const bstring data_path );
 void isomap_render_cleanup( void );
 void isomap_render_draw_tile(
