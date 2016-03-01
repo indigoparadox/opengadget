@@ -118,14 +118,10 @@ cleanup:
    return isomap_out;
 }
 
-#if 0
-int isomap_get_tile( int x, int y, struct isomap* map ) {
+void isomap_reset_movable( struct isomap* map ) {
    int i;
 
-   for( i = 0; i < map->tiles_count ; i++ ) {
-      if( map->tiles[i].x == x && map->tiles[i].y == y ) {
-         return i;
-      }
+   for( i = 0 ; map->tiles_count > i ; i++ ) {
+      map->tiles[i].movable = OG_FALSE;
    }
 }
-#endif

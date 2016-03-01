@@ -507,14 +507,14 @@ void isomap_render_loop(
          rotation
       );
 
-      /* Draw the cursor if this tile is highlighted. */
-      if( mouse_tile_x == map->tiles[j].x && mouse_tile_y == map->tiles[j].y ) {
-         isomap_render_draw_cursor( ISOMAP_RENDER_UI_MAPCURSOR, mouse_tile_x, mouse_tile_y, map, viewport, rotation );
-      }
-
       /* Draw the "movable" square on this tile if a unit can move here. */
       if( map->tiles[j].movable ) {
          isomap_render_draw_cursor( ISOMAP_RENDER_UI_MAPMARKER, map->tiles[j].x, map->tiles[j].y, map, viewport, rotation );
+      }
+
+      /* Draw the cursor if this tile is highlighted. */
+      if( mouse_tile_x == map->tiles[j].x && mouse_tile_y == map->tiles[j].y ) {
+         isomap_render_draw_cursor( ISOMAP_RENDER_UI_MAPCURSOR, mouse_tile_x, mouse_tile_y, map, viewport, rotation );
       }
 
       /* Draw the unit on this tile if there is one. */

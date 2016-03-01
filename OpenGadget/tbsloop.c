@@ -86,25 +86,23 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
                   rotation
                );
 
-               /* TODO: Figure out the reason for the mouse coordinate shift. */
-               //active_tile_index = (mouse_tile_y * config->map->height) + mouse_tile_x;
-               for( i = 0 ; config->map->tiles_count > i ; i++ ) {
-                  if( config->map->tiles[i].x == mouse_tile_x && config->map->tiles[i].y == mouse_tile_y ) {
-                     active_tile_index = i;
-                     break;
-                  }
+               active_tile_index = (mouse_tile_y * config->map->width) + mouse_tile_x;
+
+               if( 0 > active_tile_index || config->map->tiles_count <= active_tile_index ) {
+                  break;
                }
 
-               if( 0 <= active_tile_index ) {
-                  unit_test = config->map->tiles[active_tile_index].unit;
-                  if( NULL != unit_test ) {
-                     units_select( unit_test );
-                     units_walk_range(
-                        unit_test->tile,
-                        unit_test,
-                        units_get_mobility_range( unit_test )
-                     );
-                  }
+               SDL_LogDebug( SDL_LOG_CATEGORY_APPLICATION, "Mouse clicked on tile: %d, %d", config->map->tiles[active_tile_index].x, config->map->tiles[active_tile_index].y );
+
+               unit_test = config->map->tiles[active_tile_index].unit;
+               if( NULL != unit_test ) {
+                  isomap_reset_movable( config->map );
+                  units_select( unit_test );
+                  units_walk_range(
+                     unit_test->tile,
+                     unit_test,
+                     units_get_mobility_range( unit_test )
+                  );
                }
 
                break;

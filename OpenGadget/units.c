@@ -53,10 +53,9 @@ const int units_terrain_cost_table[UNITS_TYPE_MAX][ISOMAP_TERRAIN_MAX] = {
    { 10, 10, -2, 10, 10, 10, 10, 10, -2, 10, 10, -1, 10, -2, -2, -2, -2, -2, -2, -2, 10, 10, 10, 10, 10, 10, 10 },
    { 10, 10, -2, 10, 10, 10, 10, 10, -2, 10, 10, -1, 10, -2, -2, -2, -2, -2, -2, -2, 10, 10, 10, 10, 10, 10, 10 },
    { 10, 10, -2, 10, 10, 10, 10, 10, -2, 10, 10, -1, 10, -2, -2, -2, -2, -2, -2, -2, 10, 10, 10, 10, 10, 10, 10 },
-   /* TODO: Make allowance for harbor. */
-   { -1, -1, -1, -1, -1, -1, 10, 10, -2, -1, -1, -1, -1, -2, -2, -2, -2, -2, -2, -2, -1, -1, -1, -1, -1, -1, -1 },
-   { -1, -1, -1, -1, -1, -1, 10, 10, -2, -1, -1, -1, -1, -2, -2, -2, -2, -2, -2, -2, -1, -1, -1, -1, -1, -1, -1 },
-   { -1, -1, -1, -1, -1, 10, 10, 10, -2, -1, -1, -1, -1, -2, -2, -2, -2, -2, -2, -2, -1, -1, -1, -1, -1, -1, -1 },
+   { -1, -1, -1, -1, -1, -1, 10, 10, -2, -1, -1, -1, -1, -2, -2, -2, -2, -2, -2, -2, -1, -1, -1, -1, 10, -1, -1 },
+   { -1, -1, -1, -1, -1, -1, 10, 10, -2, -1, -1, -1, -1, -2, -2, -2, -2, -2, -2, -2, -1, -1, -1, -1, 10, -1, -1 },
+   { -1, -1, -1, -1, -1, 10, 10, 10, -2, -1, -1, -1, -1, -2, -2, -2, -2, -2, -2, -2, -1, -1, -1, -1, 10, -1, -1 },
 };
 
 void units_select( struct units_unit* unit ) {
@@ -68,6 +67,11 @@ void units_walk_range( struct isomap_tile* tile, struct units_unit* unit, int mo
    struct isomap_tile* tile_test;
    int new_mobility;
    
+   if( 0 > units_terrain_cost_table[unit->type][tile->terrain] ) {
+      /* Negative cost means a blocking tile. */
+      return;
+   }
+
    new_mobility = mobility - units_terrain_cost_table[unit->type][tile->terrain];
 
    if( 0 >= new_mobility ) {
@@ -77,8 +81,8 @@ void units_walk_range( struct isomap_tile* tile, struct units_unit* unit, int mo
 
    tile->movable = OG_TRUE;
 
-   for( x_add = -1 ; x_add < 2 ; x_add += 2 ) {
-      for( y_add = -1 ; y_add < 2 ; y_add += 2 ) {
+   for( x_add = -1 ; x_add < 2 ; x_add ++ ) {
+      for( y_add = -1 ; y_add < 2 ; y_add ++ ) {
          tile_test_index = isomap_get_tile( tile->x + x_add, tile->y + y_add, tile->map );
 
          if( 0 > tile_test_index || tile->map->tiles_count <= tile_test_index ) {
@@ -88,10 +92,12 @@ void units_walk_range( struct isomap_tile* tile, struct units_unit* unit, int mo
 
          tile_test = &(tile->map->tiles[tile_test_index]);
 
+#if 0
          if( tile_test->movable ) {
             /* This tile has already been walked. */
             continue;
          }
+#endif
 
          /* TODO: Account for tile costs. */
 

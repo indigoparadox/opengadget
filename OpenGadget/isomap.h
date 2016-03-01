@@ -33,7 +33,7 @@
 typedef enum {
    ISOMAP_TERRAIN_PLAINS =  0x00,
    ISOMAP_TERRAIN_ROAD =    0x01,
-
+   ISOMAP_TERRAIN_DESERT =  0x02,
    ISOMAP_TERRAIN_SWAMP =   0x03,
    ISOMAP_TERRAIN_TREES =   0x04,
    ISOMAP_TERRAIN_BEACH =   0x05,
@@ -102,8 +102,6 @@ struct isomap {
 #define isomap_get_tile( x, y, map ) ((y) * (map->width)) + (x)
 
 struct isomap* isomap_load_map( uint8_t* map_data, uint32_t map_data_len );
-#if 0
-int isomap_get_tile( int x, int y, struct isomap* map );
-#endif
+void isomap_reset_movable( struct isomap* map );
 
 #endif /* ISOMAP_H */
