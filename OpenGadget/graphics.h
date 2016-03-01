@@ -70,23 +70,23 @@ void graphics_transform_isometric_reverse(
    const SDL_Rect* viewport,
    int rotation
 );
-#if 0
+#ifdef USE_INLINE_HELPERS
 #ifdef _MSC_VER
 __inline
 #else
 inline
 #endif /* _MSC_VER */
-#endif
+#endif /* USE_INLINE_HELPERS */
 void graphics_isometric_tile_rotate(
    int* x, int* y, int width, int height, GRAPHICS_ROTATE rotation
 );
-#if 0
+#ifdef USE_INLINE_HELPERS
 #ifdef _MSC_VER
 __inline
 #else
 inline
 #endif /* _MSC_VER */
-#endif
+#endif /* USE_INLINE_HELPERS */
 void graphics_transform_isometric(
    int tile_x, int tile_y, int* screen_x, int* screen_y, const SDL_Rect* viewport
 );
