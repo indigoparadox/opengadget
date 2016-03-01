@@ -55,7 +55,11 @@ typedef enum {
 
 typedef enum {
    UNITS_TEAM_WHITE,
-   UNITS_TEAM_BLACK
+   UNITS_TEAM_BLACK,
+   UNITS_TEAM_ARMY,
+   UNITS_TEAM_SILVER,
+   UNITS_TEAM_CONTINENTAL,
+   UNITS_TEAM_MAX
 } UNITS_TEAM;
 
 struct units_unit {

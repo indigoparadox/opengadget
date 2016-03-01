@@ -18,7 +18,7 @@
 #include "isomap_render.h"
 
 static SDL_Texture* isomap_render_terrain_textures[0xff];
-static SDL_Texture* isomap_render_unit_textures[0xff];
+static SDL_Texture* isomap_render_unit_textures[UNITS_TEAM_MAX * ISOMAP_RENDER_UNIT_TEXTURES_MAX];
 static SDL_Texture* isomap_render_ui_textures[0xff];
 static uint8_t isomap_render_textures_loaded = 0;
 
@@ -31,7 +31,7 @@ OG_RETVAL isomap_render_load_textures( const bstring data_path ) {
    bstring gfx_data_path = NULL;
    FILE* gfx_data_file = NULL;
    struct pak_file* gfx_data_pak = NULL;
-   int i;
+   int i, t;
    struct tagbstring ui_cursor = bsStatic( "RS_MAPCUR" );
    struct tagbstring ui_marker = bsStatic( "RS_MAPMARK" );
    struct tagbstring ui_bgtile = bsStatic( "UI_ROGOTILE" );
@@ -70,16 +70,13 @@ OG_RETVAL isomap_render_load_textures( const bstring data_path ) {
       isomap_render_terrain_textures[ISOMAP_BUILDINGS_TILES_OFFSET + i] = graphics_image_load( gfx_tile_name, gfx_data_pak );
    }
 
-   /* Load the white units. */
-   for( i = 0 ; ISOMAP_RENDER_UNIT_TEXTURES_MAX > i ; i++ ) {
-      bassignformat( gfx_tile_name, gfx_unit_name_format, 0, i );
-      isomap_render_unit_textures[i] = graphics_image_load( gfx_tile_name, gfx_data_pak );
-   }
-
-   /* Load the black units. */
-   for( i = ISOMAP_RENDER_UNIT_TEXTURES_MAX ; (2 * ISOMAP_RENDER_UNIT_TEXTURES_MAX) > i ; i++ ) {
-      bassignformat( gfx_tile_name, gfx_unit_name_format, 1, (i - ISOMAP_RENDER_UNIT_TEXTURES_MAX) );
-      isomap_render_unit_textures[i] = graphics_image_load( gfx_tile_name, gfx_data_pak );
+   /* Load the units. */
+   for( t = 0 ; t < UNITS_TEAM_MAX ; t++ ) {
+      for( i = 0 ; ISOMAP_RENDER_UNIT_TEXTURES_MAX > i ; i++ ) {
+         bassignformat( gfx_tile_name, gfx_unit_name_format, t, i );
+         isomap_render_unit_textures[(t * ISOMAP_RENDER_UNIT_TEXTURES_MAX) + i]
+            = graphics_image_load( gfx_tile_name, gfx_data_pak );
+      }
    }
 
    isomap_render_ui_textures[ISOMAP_RENDER_UI_MAPCURSOR] = graphics_image_load( &ui_cursor, gfx_data_pak );
@@ -255,12 +252,8 @@ static void isomap_render_select_unit(
    texture_selection->sprite_rect.x = GRAPHICS_TILE_WIDTH * animation_frame;
    texture_selection->sprite_rect.y = GRAPHICS_TILE_HEIGHT * (unit->facing + 1);
    
-   if( unit->team ) {
-      texture_selection->texture_index = ISOMAP_RENDER_UNIT_TEXTURES_MAX + unit->type;
-   } else {
-      texture_selection->texture_index = unit->type;
-   }
-   
+   texture_selection->texture_index = 
+      (ISOMAP_RENDER_UNIT_TEXTURES_MAX * unit->team) + unit->type;
 }
 
 void isomap_render_draw_tile(
