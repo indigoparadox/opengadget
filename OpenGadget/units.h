@@ -42,7 +42,8 @@ typedef enum {
    UNITS_TYPE_TURRET_ANTI_LAND,
    UNITS_TYPE_TURRET_ANTI_AIR,
    UNITS_TYPE_TURRET_ANTI_SEA,
-   UNITS_TYPE_OBSTACLE
+   UNITS_TYPE_OBSTACLE,
+   UNITS_TYPE_MAX
 } UNITS_TYPE;
 
 typedef enum {
@@ -67,5 +68,8 @@ struct units_unit {
 };
 
 void units_select( struct units_unit* unit );
+void units_walk_range( struct isomap_tile* tile, struct unit* unit, int mobility );
+int units_get_mobility_range( struct units_unit* unit );
+int units_get_mobility_cost( struct units_unit* unit, struct isomap_tile* tile );
 
 #endif /* UNITS_H */
