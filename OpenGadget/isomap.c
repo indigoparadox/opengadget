@@ -17,6 +17,14 @@
 
 #include "isomap.h"
 
+const int isomap_terrain_defence_table[ISOMAP_TERRAIN_MAX] = {
+   10, 0, -2, 0, 20, 0, 0, 0, -2, 40, 60, -1, 0, -2, -2, -2, -2, -2, -2, -2, 30, 30, 30, 30, 30, 30
+};
+
+const int isomap_terrain_camo_table[ISOMAP_TERRAIN_MAX] = {
+   1, 0, -2, 1, 2, 0, 0, 0, -2, 2, 2, -1, 0, -2, -2, -2, -2, -2, -2, -2, 0, 0, 0, 0, 0, 0
+};
+
 struct isomap* isomap_load_map( uint8_t* map_data, uint32_t map_data_len ) {
    int32_t i, j;
    int32_t cursor = -1;
