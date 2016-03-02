@@ -19,7 +19,7 @@
 
 extern bstring data_path;
 
-void tbsloop_unit_move_step( struct tbsloop_config* config ) {
+static void tbsloop_unit_move_step( struct tbsloop_config* config ) {
    struct isomap_tile** tile_list_temp;
 
    if( NULL == config->moving_unit || NULL == config->moving_unit->path_list ) {
@@ -68,12 +68,12 @@ void tbsloop_unit_move_step( struct tbsloop_config* config ) {
    }
 }
 
-void tbsloop_unit_move_start( struct tbsloop_config* config, struct isomap_tile* tile_dst ) {
+static void tbsloop_unit_move_start( struct tbsloop_config* config, struct isomap_tile* tile_dst ) {
    isomap_reset_movable( config->map );
    units_move( config->moving_unit, config->moving_unit->tile, tile_dst );
 }
 
-void tbsloop_handle_mouseup( SDL_Event* event, struct tbsloop_config* config ){
+static void tbsloop_handle_mouseup( SDL_Event* event, struct tbsloop_config* config ){
    int mouse_tile_x = 0, mouse_tile_y = 0, active_tile_index = -1;
    struct units_unit* unit_test = NULL;
 
