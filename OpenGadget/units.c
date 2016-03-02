@@ -118,67 +118,75 @@ void units_walk_range( struct isomap_tile* tile, struct units_unit* unit, int mo
 }
 
 OG_BOOL units_move( struct units_unit* unit, struct isomap_tile* tile_current, struct isomap_tile* tile_dst ) {
-   int x_add, y_add, tile_test_index;
+   int x_add, y_add, tile_test_index, i;
    struct isomap_tile* tile_test;
    OG_BOOL success = OG_FALSE;
+   struct isomap_tile* directions[4];
+   int directions_count = 0;
+   int direction_index = 0;
 
    if( tile_current->x == tile_dst->x && tile_current->y == tile_dst->y ) {
       /* We've found our path, so get started actually moving. */
       unit->path_list_count++;
       unit->path_list = realloc( unit->path_list, (unit->path_list_count) * sizeof( struct isomap_tile* ) );
       unit->path_list[unit->path_list_count - 1] = tile_current;
-      return;
+      success = OG_TRUE;
+      goto cleanup;
    }
-
-pathfind:
 
    for( x_add = -1 ; x_add < 2 ; x_add++ ) {
       for( y_add = -1 ; y_add < 2 ; y_add++ ) {
          tile_test_index = isomap_get_tile( tile_current->x + x_add, tile_current->y + y_add, tile_current->map );
          tile_test = &(tile_current->map->tiles[tile_test_index]);
 
+         if( 0 != x_add && 0 != y_add ) {
+            /* Skip diagonals. */
+            continue;
+         }
+
+         if( 0 > tile_test_index || tile_current->map->tiles_count <= tile_test_index ) {
+            /* This tile does not exist. */
+            continue;
+         }
+
          if( !units_terrain_passable( unit, tile_test ) ) {
-            /* Don't bother with tiles we can't cross. */
+            /* Skip blocking tiles. */
             continue;
          }
 
-         if( 0 == x_add && 0 == y_add ) {
+#if 0
+         if( tile_test->movable ) {
+            /* This tile has already been walked. */
             continue;
          }
+#endif
 
-         if( 
-            OG_TRUE == success && (
-               (tile_dst->x > tile_current->x && 
-                  (tile_test->x > tile_current->x && tile_test->y == tile_current->y)) ||
-               (tile_dst->x < tile_current->x && 
-                  (tile_test->x < tile_current->x && tile_test->y == tile_current->y)) ||
-               (tile_dst->y > tile_current->y &&
-                  (tile_test->y > tile_current->y && tile_test->x == tile_current->x )) ||
-               (tile_dst->y < tile_current->y &&
-                  (tile_test->y < tile_current->y && tile_test->x == tile_current->x))
-            ) || OG_FALSE == success /* We failed last time, so just do whatever. */
-         ) {
-            unit->path_list_count++;
-            if( NULL != unit->path_list ) {
-               /* This is just another step in the journey. */
-               unit->path_list = realloc( unit->path_list, (unit->path_list_count) * sizeof( struct isomap_tile* ) );
-            } else {
-               /* This is the first step! */
-               unit->path_list = calloc( unit->path_list_count, sizeof( struct isomap_tile* ) );
-            }
-            unit->path_list[unit->path_list_count - 1] = tile_test;
-            if( OG_TRUE == units_move( unit, tile_test, tile_dst ) ) {
-               success = OG_TRUE;
-               goto cleanup;
-            } else {
-               success = OG_FALSE;
-               goto pathfind;
-            }
+         if( units_move( unit, tile_test, tile_dst ) ) {
+            directions[direction_index] = tile_test;
+            directions_count++;
+         } else {
+            directions[direction_index] = 0;
          }
+
+         direction_index++;
       }
    }
 
 cleanup:
+
+   for( i = 0 ; directions_count > i ; i++ ) {
+      tile_test = directions[i];
+      unit->path_list_count++;
+      if( NULL != unit->path_list ) {
+         /* This is just another step in the journey. */
+         unit->path_list = realloc( unit->path_list, (unit->path_list_count) * sizeof( struct isomap_tile* ) );
+      } else {
+         /* This is the first step! */
+         unit->path_list = calloc( unit->path_list_count, sizeof( struct isomap_tile* ) );
+      }
+      unit->path_list[unit->path_list_count - 1] = tile_test;
+      break;
+   }
 
    return success;
 }
