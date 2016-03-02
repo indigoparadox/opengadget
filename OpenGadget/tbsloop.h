@@ -26,9 +26,15 @@
 #include "isomap_terrain.h"
 #include "isomap_render.h"
 
+#define TBSLOOP_VIEWPORT_STEP 10
+
 typedef enum {
    TBSLOOP_STATE_FREE,
    TBSLOOP_STATE_MOVING,
+   TBSLOOP_STATE_SCROLLING_X_RIGHT,
+   TBSLOOP_STATE_SCROLLING_X_LEFT,
+   TBSLOOP_STATE_SCROLLING_Y_UP,
+   TBSLOOP_STATE_SCROLLING_Y_DOWN,
 } TBSLOOP_STATE;
 
 struct tbsloop_config {
@@ -36,6 +42,7 @@ struct tbsloop_config {
    bstring map_name;
    GRAPHICS_ROTATE rotation;
    TBSLOOP_STATE current_state;
+   TBSLOOP_STATE previous_state;
    struct units_unit* moving_unit;
    SDL_Rect viewport;
 };
