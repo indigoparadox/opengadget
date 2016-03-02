@@ -58,15 +58,21 @@ const int units_terrain_cost_table[UNITS_TYPE_MAX][ISOMAP_TERRAIN_MAX] = {
    { -1, -1, -1, -1, -1, 10, 10, 10, -2, -1, -1, -1, -1, -2, -2, -2, -2, -2, -2, -2, -1, -1, -1, -1, 10, -1, -1 },
 };
 
+static OG_BOOL units_terrain_passable( struct units_unit* unit, struct isomap_tile* tile ) {
+   if(
+      0 > units_terrain_cost_table[unit->type][tile->terrain] ||
+      NULL != tile->unit
+   ) {
+      return OG_FALSE;
+   }
+
+   return OG_TRUE;
+}
+
 void units_walk_range( struct isomap_tile* tile, struct units_unit* unit, int mobility ) {
    int x_add, y_add, tile_test_index;
    struct isomap_tile* tile_test;
    int new_mobility;
-   
-   if( 0 > units_terrain_cost_table[unit->type][tile->terrain] ) {
-      /* Negative cost means a blocking tile. */
-      return;
-   }
 
    new_mobility = mobility - units_terrain_cost_table[unit->type][tile->terrain];
 
@@ -77,16 +83,25 @@ void units_walk_range( struct isomap_tile* tile, struct units_unit* unit, int mo
 
    tile->movable = OG_TRUE;
 
-   for( x_add = -1 ; x_add < 2 ; x_add ++ ) {
-      for( y_add = -1 ; y_add < 2 ; y_add ++ ) {
+   for( x_add = -1 ; x_add < 2 ; x_add++ ) {
+      for( y_add = -1 ; y_add < 2 ; y_add++ ) {
          tile_test_index = isomap_get_tile( tile->x + x_add, tile->y + y_add, tile->map );
+         tile_test = &(tile->map->tiles[tile_test_index]);
+
+         if( 0 != x_add && 0 != y_add ) {
+            /* Skip diagonals. */
+            continue;
+         }
 
          if( 0 > tile_test_index || tile->map->tiles_count <= tile_test_index ) {
             /* This tile does not exist. */
             continue;
          }
 
-         tile_test = &(tile->map->tiles[tile_test_index]);
+         if( !units_terrain_passable( unit, tile_test ) ) {
+            /* Skip blocking tiles. */
+            continue;
+         }
 
 #if 0
          if( tile_test->movable ) {
@@ -119,7 +134,7 @@ void units_move( struct units_unit* unit, struct isomap_tile* tile_current, stru
          tile_test_index = isomap_get_tile( tile_current->x + x_add, tile_current->y + y_add, tile_current->map );
          tile_test = &(tile_current->map->tiles[tile_test_index]);
 
-         if( 0 > units_terrain_cost_table[tile_test->terrain] ) {
+         if( !units_terrain_passable( unit, tile_test ) ) {
             /* Don't bother with tiles we can't cross. */
             continue;
          }
