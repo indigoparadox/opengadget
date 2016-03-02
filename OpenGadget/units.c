@@ -117,9 +117,10 @@ void units_walk_range( struct isomap_tile* tile, struct units_unit* unit, int mo
    }
 }
 
-void units_move( struct units_unit* unit, struct isomap_tile* tile_current, struct isomap_tile* tile_dst ) {
+OG_BOOL units_move( struct units_unit* unit, struct isomap_tile* tile_current, struct isomap_tile* tile_dst ) {
    int x_add, y_add, tile_test_index;
    struct isomap_tile* tile_test;
+   OG_BOOL success = OG_FALSE;
 
    if( tile_current->x == tile_dst->x && tile_current->y == tile_dst->y ) {
       /* We've found our path, so get started actually moving. */
@@ -128,6 +129,8 @@ void units_move( struct units_unit* unit, struct isomap_tile* tile_current, stru
       unit->path_list[unit->path_list_count - 1] = tile_current;
       return;
    }
+
+pathfind:
 
    for( x_add = -1 ; x_add < 2 ; x_add++ ) {
       for( y_add = -1 ; y_add < 2 ; y_add++ ) {
@@ -144,14 +147,16 @@ void units_move( struct units_unit* unit, struct isomap_tile* tile_current, stru
          }
 
          if( 
-            (tile_dst->x > tile_current->x && 
-               (tile_test->x > tile_current->x && tile_test->y == tile_current->y)) ||
-            (tile_dst->x < tile_current->x && 
-               (tile_test->x < tile_current->x && tile_test->y == tile_current->y)) ||
-            (tile_dst->y > tile_current->y &&
-               (tile_test->y > tile_current->y && tile_test->x == tile_current->x )) ||
-            (tile_dst->y < tile_current->y &&
-               (tile_test->y < tile_current->y && tile_test->x == tile_current->x))
+            OG_TRUE == success && (
+               (tile_dst->x > tile_current->x && 
+                  (tile_test->x > tile_current->x && tile_test->y == tile_current->y)) ||
+               (tile_dst->x < tile_current->x && 
+                  (tile_test->x < tile_current->x && tile_test->y == tile_current->y)) ||
+               (tile_dst->y > tile_current->y &&
+                  (tile_test->y > tile_current->y && tile_test->x == tile_current->x )) ||
+               (tile_dst->y < tile_current->y &&
+                  (tile_test->y < tile_current->y && tile_test->x == tile_current->x))
+            ) || OG_FALSE == success /* We failed last time, so just do whatever. */
          ) {
             unit->path_list_count++;
             if( NULL != unit->path_list ) {
@@ -162,11 +167,20 @@ void units_move( struct units_unit* unit, struct isomap_tile* tile_current, stru
                unit->path_list = calloc( unit->path_list_count, sizeof( struct isomap_tile* ) );
             }
             unit->path_list[unit->path_list_count - 1] = tile_test;
-            units_move( unit, tile_test, tile_dst );
-            return;
+            if( OG_TRUE == units_move( unit, tile_test, tile_dst ) ) {
+               success = OG_TRUE;
+               goto cleanup;
+            } else {
+               success = OG_FALSE;
+               goto pathfind;
+            }
          }
       }
    }
+
+cleanup:
+
+   return success;
 }
 
 int units_get_mobility_range( struct units_unit* unit ) {
