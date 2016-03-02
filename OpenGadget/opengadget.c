@@ -42,6 +42,8 @@ int main( int argc, char* argv[] ) {
    int i;
    struct pak_entry* entry;
 
+   memset( &map_config, '\0', sizeof( struct tbsloop_config ) );
+
 #ifdef DEBUG
    SDL_LogSetAllPriority( SDL_LOG_PRIORITY_DEBUG );
 #endif

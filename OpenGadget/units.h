@@ -69,10 +69,14 @@ struct units_unit {
    struct isomap_tile* tile;
    UNITS_FACING facing;
    OG_BOOL selected;
+   struct isomap_tile** path_list;
+   int path_list_count;
+   int path_next_percent_x;
+   int path_next_percent_y;
 };
 
-void units_select( struct units_unit* unit );
 void units_walk_range( struct isomap_tile* tile, struct unit* unit, int mobility );
+void units_move( struct units_unit* unit, struct isomap_tile* tile_current, struct isomap_tile* tile_dst );
 int units_get_mobility_range( struct units_unit* unit );
 int units_get_mobility_cost( struct units_unit* unit, struct isomap_tile* tile );
 

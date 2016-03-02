@@ -26,9 +26,18 @@
 #include "isomap_terrain.h"
 #include "isomap_render.h"
 
+typedef enum {
+   TBSLOOP_STATE_FREE,
+   TBSLOOP_STATE_MOVING,
+} TBSLOOP_STATE;
+
 struct tbsloop_config {
    struct isomap* map;
    bstring map_name;
+   GRAPHICS_ROTATE rotation;
+   TBSLOOP_STATE current_state;
+   struct units_unit* moving_unit;
+   SDL_Rect viewport;
 };
 
 OG_RETVAL tbsloop_loop( struct tbsloop_config* config );
