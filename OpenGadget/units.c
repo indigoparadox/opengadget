@@ -61,7 +61,7 @@ const int units_terrain_cost_table[UNITS_TYPE_MAX][ISOMAP_TERRAIN_MAX] = {
 static OG_BOOL units_terrain_passable( struct units_unit* unit, struct isomap_tile* tile ) {
    if(
       0 > units_terrain_cost_table[unit->type][tile->terrain] ||
-      NULL != tile->unit
+      (NULL != tile->unit && unit != tile->unit)
    ) {
       return OG_FALSE;
    }

@@ -69,6 +69,14 @@ static void tbsloop_unit_move_step( struct tbsloop_config* config ) {
 }
 
 static void tbsloop_unit_move_start( struct tbsloop_config* config, struct isomap_tile* tile_dst ) {
+   if( !tile_dst->movable ) {
+      /* Cancel if an invalid tile is selected. */
+      isomap_reset_movable( config->map );
+      config->current_state = TBSLOOP_STATE_FREE;
+      config->moving_unit = NULL;
+      return;
+   }
+
    isomap_reset_movable( config->map );
    units_move( config->moving_unit, config->moving_unit->tile, tile_dst );
 }
@@ -109,7 +117,6 @@ static void tbsloop_handle_mouseup( SDL_Event* event, struct tbsloop_config* con
          }
 
          /* Start the movement selection process. */
-         /* TODO: Cancel if an invalid tile is selected. */
          isomap_reset_movable( config->map );
          units_walk_range(
             unit_test->tile,
@@ -128,6 +135,20 @@ static void tbsloop_handle_mouseup( SDL_Event* event, struct tbsloop_config* con
          }
          break;
    }
+}
+
+static void tbsloop_scrolling_state( TBSLOOP_STATE new_state, struct tbsloop_config* config ) {
+   if(
+      TBSLOOP_STATE_SCROLLING_X_RIGHT != config->current_state &&
+      TBSLOOP_STATE_SCROLLING_X_LEFT != config->current_state &&
+      TBSLOOP_STATE_SCROLLING_Y_UP != config->current_state &&
+      TBSLOOP_STATE_SCROLLING_Y_DOWN != config->current_state
+   ) {
+      /* Hold on to the previous state in case we're moving a unit. */
+      config->previous_state = config->current_state;
+   }
+
+   config->current_state = new_state;
 }
 
 OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
@@ -184,6 +205,21 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
                tbsloop_handle_mouseup( &event, config );
                break;
 
+            case SDL_KEYUP:
+               if(
+                  ((TBSLOOP_STATE_SCROLLING_X_RIGHT == config->current_state &&
+                     SDLK_RIGHT == event.key.keysym.sym) ||
+                  (TBSLOOP_STATE_SCROLLING_X_LEFT == config->current_state &&
+                     SDLK_LEFT == event.key.keysym.sym) ||
+                  (TBSLOOP_STATE_SCROLLING_Y_UP == config->current_state &&
+                     SDLK_UP == event.key.keysym.sym) ||
+                  (TBSLOOP_STATE_SCROLLING_Y_DOWN == config->current_state &&
+                     SDLK_DOWN == event.key.keysym.sym ))
+               ) {
+                  config->current_state = config->previous_state;
+               }
+               break;
+
             case SDL_KEYDOWN:
                switch( event.key.keysym.sym ) {
                   case SDLK_r:
@@ -196,19 +232,19 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
                      break;
 
                   case SDLK_RIGHT:
-                     config->viewport.x -= 100;
+                     tbsloop_scrolling_state( TBSLOOP_STATE_SCROLLING_X_RIGHT, config );
                      break;
 
                   case SDLK_LEFT:
-                     config->viewport.x += 100;
+                     tbsloop_scrolling_state( TBSLOOP_STATE_SCROLLING_X_LEFT, config );
                      break;
 
                   case SDLK_UP:
-                     config->viewport.y += 100;
+                     tbsloop_scrolling_state( TBSLOOP_STATE_SCROLLING_Y_UP, config );
                      break;
 
                   case SDLK_DOWN:
-                     config->viewport.y -= 100;
+                     tbsloop_scrolling_state( TBSLOOP_STATE_SCROLLING_Y_DOWN, config );
                      break;
 
                   case SDLK_ESCAPE:
@@ -220,6 +256,21 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
 
       /* Perform any animated actions. */
       tbsloop_unit_move_step( config );
+
+      switch( config->current_state ) {
+         case TBSLOOP_STATE_SCROLLING_X_LEFT:
+            config->viewport.x += TBSLOOP_VIEWPORT_STEP;
+            break;
+         case TBSLOOP_STATE_SCROLLING_X_RIGHT:
+            config->viewport.x -= TBSLOOP_VIEWPORT_STEP;
+            break;
+         case TBSLOOP_STATE_SCROLLING_Y_UP:
+            config->viewport.y += TBSLOOP_VIEWPORT_STEP;
+            break;
+         case TBSLOOP_STATE_SCROLLING_Y_DOWN:
+            config->viewport.y -= TBSLOOP_VIEWPORT_STEP;
+            break;
+      }
 
       /* Draw the current frame. */
       isomap_render_loop( config->map, &(config->viewport), config->rotation, mouse_tile_x, mouse_tile_y );
