@@ -58,10 +58,6 @@ const int units_terrain_cost_table[UNITS_TYPE_MAX][ISOMAP_TERRAIN_MAX] = {
    { -1, -1, -1, -1, -1, 10, 10, 10, -2, -1, -1, -1, -1, -2, -2, -2, -2, -2, -2, -2, -1, -1, -1, -1, 10, -1, -1 },
 };
 
-void units_select( struct units_unit* unit ) {
-   unit->tile->movable = OG_TRUE;
-}
-
 void units_walk_range( struct isomap_tile* tile, struct units_unit* unit, int mobility ) {
    int x_add, y_add, tile_test_index;
    struct isomap_tile* tile_test;
@@ -102,6 +98,58 @@ void units_walk_range( struct isomap_tile* tile, struct units_unit* unit, int mo
          /* TODO: Account for tile costs. */
 
          units_walk_range( tile_test, unit, new_mobility );
+      }
+   }
+}
+
+void units_move( struct units_unit* unit, struct isomap_tile* tile_current, struct isomap_tile* tile_dst ) {
+   int x_add, y_add, tile_test_index;
+   struct isomap_tile* tile_test;
+
+   if( tile_current->x == tile_dst->x && tile_current->y == tile_dst->y ) {
+      /* We've found our path, so get started actually moving. */
+      unit->path_list_count++;
+      unit->path_list = realloc( unit->path_list, (unit->path_list_count) * sizeof( struct isomap_tile* ) );
+      unit->path_list[unit->path_list_count - 1] = tile_current;
+      return;
+   }
+
+   for( x_add = -1 ; x_add < 2 ; x_add++ ) {
+      for( y_add = -1 ; y_add < 2 ; y_add++ ) {
+         tile_test_index = isomap_get_tile( tile_current->x + x_add, tile_current->y + y_add, tile_current->map );
+         tile_test = &(tile_current->map->tiles[tile_test_index]);
+
+         if( 0 > units_terrain_cost_table[tile_test->terrain] ) {
+            /* Don't bother with tiles we can't cross. */
+            continue;
+         }
+
+         if( 0 == x_add && 0 == y_add ) {
+            continue;
+         }
+
+         if( 
+            (tile_dst->x > tile_current->x && 
+               (tile_test->x > tile_current->x && tile_test->y == tile_current->y)) ||
+            (tile_dst->x < tile_current->x && 
+               (tile_test->x < tile_current->x && tile_test->y == tile_current->y)) ||
+            (tile_dst->y > tile_current->y &&
+               (tile_test->y > tile_current->y && tile_test->x == tile_current->x )) ||
+            (tile_dst->y < tile_current->y &&
+               (tile_test->y < tile_current->y && tile_test->x == tile_current->x))
+         ) {
+            unit->path_list_count++;
+            if( NULL != unit->path_list ) {
+               /* This is just another step in the journey. */
+               unit->path_list = realloc( unit->path_list, (unit->path_list_count) * sizeof( struct isomap_tile* ) );
+            } else {
+               /* This is the first step! */
+               unit->path_list = calloc( unit->path_list_count, sizeof( struct isomap_tile* ) );
+            }
+            unit->path_list[unit->path_list_count - 1] = tile_test;
+            units_move( unit, tile_test, tile_dst );
+            return;
+         }
       }
    }
 }
