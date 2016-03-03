@@ -117,39 +117,45 @@ void units_walk_range( struct isomap_tile* tile, struct units_unit* unit, int mo
    }
 }
 
-OG_BOOL units_move( struct units_unit* unit, struct isomap_tile* tile_current, struct isomap_tile** tiles_previous, int tiles_previous_count, struct isomap_tile* tile_dst ) {
+OG_BOOL units_move( struct units_unit* unit, struct isomap_tile* tile_current, struct isomap_tile*** tiles_previous, int* tiles_previous_count, int distance, struct isomap_tile* tile_dst ) {
    int x_add, y_add, tile_test_index, i;
    struct isomap_tile* tile_test;
    OG_BOOL success = OG_FALSE;
    int directions_count = 0;
    int direction_index = 0;
+   struct isomap_tile** tiles_previous_root = NULL;
+   int tiles_previous_root_count = 0;
 
-   if( 2000 < tiles_previous_count ) {
-      success = OG_FALSE;
+   if( 20 < distance ) {
       goto cleanup;
-   }
-
-   tiles_previous_count++;
-   if( NULL == tiles_previous ) {
-      tiles_previous = calloc( tiles_previous_count, sizeof( struct isomap_tile* ) );
    } else {
-      tiles_previous = realloc( tiles_previous, (tiles_previous_count) * sizeof( struct isomap_tile* ) );
+      distance++;
    }
 
    if( NULL == tiles_previous ) {
+      tiles_previous = &tiles_previous_root;
+      tiles_previous_count = &tiles_previous_root_count;
+      (*tiles_previous_count)++;
+      *tiles_previous = calloc( *tiles_previous_count, sizeof( struct isomap_tile* ) );
+   } else {
+      (*tiles_previous_count)++;
+      *tiles_previous = realloc( *tiles_previous, (*tiles_previous_count) * sizeof( struct isomap_tile* ) );
+   }
+
+   if( NULL == *tiles_previous ) {
       SDL_LogCritical( SDL_LOG_CATEGORY_APPLICATION, "Unable to allocate memory for previous tiles list." );
       goto cleanup;
    }
 
-   tiles_previous[tiles_previous_count - 1] = tile_current;
+   (*tiles_previous)[(*tiles_previous_count) - 1] = tile_current;
 
    for( x_add = -1 ; x_add < 2 ; x_add++ ) {
       for( y_add = -1 ; y_add < 2 ; y_add++ ) {
          tile_test_index = isomap_get_tile( tile_current->x + x_add, tile_current->y + y_add, tile_current->map );
          tile_test = &(tile_current->map->tiles[tile_test_index]);
 
-         for( i = 0 ; tiles_previous_count > i ; i++ ) {
-            if( tile_test->x == tiles_previous[i]->x && tile_test->y == tiles_previous[i]->y ) {
+         for( i = 0 ; (*tiles_previous_count) > i ; i++ ) {
+            if( tile_test->x == (*tiles_previous)[i]->x && tile_test->y == (*tiles_previous)[i]->y ) {
                /* No loops. */
                continue;
             }
@@ -182,9 +188,10 @@ OG_BOOL units_move( struct units_unit* unit, struct isomap_tile* tile_current, s
             unit->path_list_count++;
             unit->path_list = realloc( unit->path_list, (unit->path_list_count) * sizeof( struct isomap_tile* ) );
             unit->path_list[unit->path_list_count - 1] = tile_current;
+            //free( tiles_previous );
             success = OG_TRUE;
             goto cleanup;
-         } else if( units_move( unit, tile_test, tiles_previous, tiles_previous_count, tile_dst ) ) {
+         } else if( units_move( unit, tile_test, tiles_previous, tiles_previous_count, distance, tile_dst ) ) {
             success = OG_TRUE;
             goto cleanup;
          }
