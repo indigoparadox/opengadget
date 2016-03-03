@@ -21,6 +21,7 @@ extern bstring data_path;
 
 static void tbsloop_unit_move_step( struct tbsloop_config* config ) {
    struct isomap_tile** tile_list_temp;
+   int i;
 
    if( NULL == config->moving_unit || NULL == config->moving_unit->path_list ) {
       /* No moving unit or the unit hasn't started moving yet. */
@@ -46,11 +47,11 @@ static void tbsloop_unit_move_step( struct tbsloop_config* config ) {
          config->moving_unit = NULL;
       } else {
          /* The unit has finished moving onto this tile, so pop it. */
+         for( i = 1 ; config->moving_unit->path_list_count > i ; i++ ) {
+            config->moving_unit->path_list[i - 1] = config->moving_unit->path_list[i];
+         }
          config->moving_unit->path_list_count--;
-         tile_list_temp = calloc( config->moving_unit->path_list_count, sizeof( struct isomap_tile* ) );
-         memcpy( tile_list_temp, &(config->moving_unit->path_list[1]), config->moving_unit->path_list_count * sizeof( struct isomap_tile* ) );
-         free( config->moving_unit->path_list );
-         config->moving_unit->path_list = tile_list_temp;
+         config->moving_unit->path_list = realloc( config->moving_unit->path_list, config->moving_unit->path_list_count * sizeof( struct isomap_tile* ) );
          config->moving_unit->path_next_percent_x = 0;
          config->moving_unit->path_next_percent_y = 0;
       }
