@@ -78,7 +78,7 @@ static void tbsloop_unit_move_start( struct tbsloop_config* config, struct isoma
    }
 
    isomap_reset_movable( config->map );
-   units_move( config->moving_unit, config->moving_unit->tile, NULL, 0, tile_dst );
+   units_move( config->moving_unit, config->moving_unit->tile, NULL, 0, 0, tile_dst );
 }
 
 static void tbsloop_handle_mouseup( SDL_Event* event, struct tbsloop_config* config ){

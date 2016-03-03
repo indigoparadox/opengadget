@@ -76,7 +76,7 @@ struct units_unit {
 };
 
 void units_walk_range( struct isomap_tile* tile, struct unit* unit, int mobility );
-OG_BOOL units_move( struct units_unit* unit, struct isomap_tile* tile_current, struct isomap_tile* tile_previous, struct isomap_tile* tile_dst );
+OG_BOOL units_move( struct units_unit* unit, struct isomap_tile* tile_current, struct isomap_tile** tiles_previous, int tiles_previous_count, int distance, struct isomap_tile* tile_dst );
 int units_get_mobility_range( struct units_unit* unit );
 int units_get_mobility_cost( struct units_unit* unit, struct isomap_tile* tile );
 
