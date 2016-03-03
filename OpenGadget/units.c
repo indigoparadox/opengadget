@@ -125,14 +125,17 @@ OG_BOOL units_move( struct units_unit* unit, struct isomap_tile* tile_current, s
    int direction_index = 0;
    struct isomap_tile** tiles_previous_root = NULL;
    int tiles_previous_root_count = 0;
+   OG_BOOL loop_found = OG_FALSE;
+   OG_BOOL root_call = OG_FALSE;
 
-   if( 20 < distance ) {
+   if( 50 < distance ) {
       goto cleanup;
    } else {
       distance++;
    }
 
    if( NULL == tiles_previous ) {
+      root_call = OG_TRUE;
       tiles_previous = &tiles_previous_root;
       tiles_previous_count = &tiles_previous_root_count;
       (*tiles_previous_count)++;
@@ -151,14 +154,19 @@ OG_BOOL units_move( struct units_unit* unit, struct isomap_tile* tile_current, s
 
    for( x_add = -1 ; x_add < 2 ; x_add++ ) {
       for( y_add = -1 ; y_add < 2 ; y_add++ ) {
+         loop_found = OG_FALSE;
          tile_test_index = isomap_get_tile( tile_current->x + x_add, tile_current->y + y_add, tile_current->map );
          tile_test = &(tile_current->map->tiles[tile_test_index]);
 
          for( i = 0 ; (*tiles_previous_count) > i ; i++ ) {
             if( tile_test->x == (*tiles_previous)[i]->x && tile_test->y == (*tiles_previous)[i]->y ) {
                /* No loops. */
-               continue;
+               loop_found = OG_TRUE;
+               break;
             }
+         }
+         if( loop_found ) {
+            continue;
          }
 
          if( 0 != x_add && 0 != y_add ) {
@@ -186,12 +194,31 @@ OG_BOOL units_move( struct units_unit* unit, struct isomap_tile* tile_current, s
          if( tile_test == tile_dst ) {
             /* We've found our path, so get started actually moving. */
             unit->path_list_count++;
-            unit->path_list = realloc( unit->path_list, (unit->path_list_count) * sizeof( struct isomap_tile* ) );
-            unit->path_list[unit->path_list_count - 1] = tile_current;
+            if( NULL == unit->path_list ) {
+               unit->path_list = calloc( (unit->path_list_count), sizeof( struct isomap_tile* ) );
+            } else {
+               unit->path_list = realloc( unit->path_list, (unit->path_list_count) * sizeof( struct isomap_tile* ) );
+            }
+            for( i = 0 ; (unit->path_list_count - 1) > i ; i++ ) {
+               /* Move the whole list up by one. */
+               unit->path_list[i + i] = unit->path_list[i];
+            }
+            unit->path_list[0] = tile_test;
             //free( tiles_previous );
             success = OG_TRUE;
             goto cleanup;
          } else if( units_move( unit, tile_test, tiles_previous, tiles_previous_count, distance, tile_dst ) ) {
+            unit->path_list_count++;
+            if( NULL == unit->path_list ) {
+               unit->path_list = calloc( (unit->path_list_count), sizeof( struct isomap_tile* ) );
+            } else {
+               unit->path_list = realloc( unit->path_list, (unit->path_list_count) * sizeof( struct isomap_tile* ) );
+            }
+            for( i = (unit->path_list_count - 1) ; 0 <= i ; i-- ) {
+               /* Move the whole list up by one. */
+               unit->path_list[i + 1] = unit->path_list[i];
+            }
+            unit->path_list[0] = tile_test;
             success = OG_TRUE;
             goto cleanup;
          }
@@ -217,6 +244,10 @@ OG_BOOL units_move( struct units_unit* unit, struct isomap_tile* tile_current, s
 #endif
 
 cleanup:
+
+   if( root_call ) {
+      free( *tiles_previous );
+   }
 
    return success;
 }
