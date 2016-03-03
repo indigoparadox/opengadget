@@ -78,7 +78,7 @@ static void tbsloop_unit_move_start( struct tbsloop_config* config, struct isoma
    }
 
    isomap_reset_movable( config->map );
-   units_move( config->moving_unit, config->moving_unit->tile, tile_dst );
+   units_move( config->moving_unit, config->moving_unit->tile, NULL, 0, tile_dst );
 }
 
 static void tbsloop_handle_mouseup( SDL_Event* event, struct tbsloop_config* config ){
@@ -172,7 +172,7 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
 
    config->viewport.w = GRAPHICS_SCREEN_WIDTH;
    config->viewport.h = GRAPHICS_SCREEN_HEIGHT;
-   config->viewport.x = 0;
+   config->viewport.x = -200;
    config->viewport.y = 200;
 
    SDL_LogInfo( SDL_LOG_CATEGORY_APPLICATION, "Started strategy mode with map: %d x %d", config->map->width, config->map->height );
