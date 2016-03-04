@@ -26,7 +26,7 @@
 #include "isomap_terrain.h"
 #include "isomap_render.h"
 
-#define TBSLOOP_VIEWPORT_STEP 10
+#define TBSLOOP_VIEWPORT_STEP 20
 
 typedef enum {
    TBSLOOP_STATE_FREE,
