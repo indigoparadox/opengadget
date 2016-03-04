@@ -118,7 +118,7 @@ void units_walk_range( struct isomap_tile* tile, struct units_unit* unit, int mo
 }
 
 OG_BOOL units_move( struct units_unit* unit, struct isomap_tile* tile_current, struct isomap_tile*** tiles_previous, int* tiles_previous_count, int distance, struct isomap_tile* tile_dst ) {
-   int x_add, y_add, tile_test_index, i;
+   int x_add, y_add, tile_test_index, i, x_inc, y_inc, x_max, y_max, x_start, y_start;
    struct isomap_tile* tile_test;
    OG_BOOL success = OG_FALSE;
    int directions_count = 0;
@@ -152,8 +152,29 @@ OG_BOOL units_move( struct units_unit* unit, struct isomap_tile* tile_current, s
 
    (*tiles_previous)[(*tiles_previous_count) - 1] = tile_current;
 
-   for( x_add = -1 ; x_add < 2 ; x_add++ ) {
-      for( y_add = -1 ; y_add < 2 ; y_add++ ) {
+   /* Try to move in the general direction of the destination. */
+   if( tile_current->x < tile_dst->x ) {
+      x_inc = -1;
+      x_max = -2;
+      x_start = 1;
+   } else {
+      x_inc = 1;
+      x_max = 2;
+      x_start = -1;
+   }
+
+   if( tile_current->y < tile_dst->y ) {
+      y_inc = -1;
+      y_max = -2;
+      y_start = 1;
+   } else {
+      y_inc = 1;
+      y_max = 2;
+      y_start = -1;
+   }
+
+   for( x_add = x_start ; x_add != x_max ; x_add += x_inc ) {
+      for( y_add = y_start ; y_add != y_max ; y_add += y_inc ) {
          loop_found = OG_FALSE;
          tile_test_index = isomap_get_tile( tile_current->x + x_add, tile_current->y + y_add, tile_current->map );
          tile_test = &(tile_current->map->tiles[tile_test_index]);
