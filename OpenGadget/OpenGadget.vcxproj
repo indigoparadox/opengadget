@@ -155,6 +155,7 @@
     <ClCompile Include="isomap.c" />
     <ClCompile Include="isomap_render.c" />
     <ClCompile Include="opengadget.c" />
+    <ClCompile Include="tbsbattle.c" />
     <ClCompile Include="tbsloop.c" />
     <ClCompile Include="units.c" />
   </ItemGroup>
@@ -166,6 +167,7 @@
     <ClInclude Include="isomap.h" />
     <ClInclude Include="isomap_render.h" />
     <ClInclude Include="isomap_terrain.h" />
+    <ClInclude Include="tbsbattle.h" />
     <ClInclude Include="tbsloop.h" />
     <ClInclude Include="units.h" />
   </ItemGroup>
