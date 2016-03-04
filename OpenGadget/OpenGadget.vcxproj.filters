@@ -39,6 +39,9 @@
     <ClCompile Include="units.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="tbsbattle.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dep\arckogako.h">
@@ -66,6 +69,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="units.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tbsbattle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
