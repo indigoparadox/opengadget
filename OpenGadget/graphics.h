@@ -88,7 +88,7 @@ inline
 #endif /* _MSC_VER */
 #endif /* USE_INLINE_HELPERS */
 void graphics_transform_isometric(
-   int tile_x, int tile_y, int* screen_x, int* screen_y, const SDL_Rect* viewport
+   float tile_x, float tile_y, int* screen_x, int* screen_y, const SDL_Rect* viewport
 );
 
 #endif /* GRAPHICS_H */
