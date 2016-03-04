@@ -272,6 +272,7 @@ void isomap_render_draw_tile(
    tile_x = tile->x;
    tile_y = tile->y;
 
+   /* Perform transformations. */
    isomap_render_select_terrain( tile, rotation, &texture_selection );
 
    graphics_isometric_tile_rotate(
@@ -336,13 +337,36 @@ void isomap_render_draw_unit(
    const SDL_Rect* viewport,
    const GRAPHICS_ROTATE rotation
 ) {
-   int i = 0, screen_x, screen_y, tile_x, tile_y;
+   int i = 0, screen_x, screen_y;
+   float tile_x, tile_y, increment;
    SDL_Texture* sprite_texture = NULL;
    struct isomap_render_texture texture_selection;
 
    tile_x = unit->tile->x;
    tile_y = unit->tile->y;
 
+   /* Animate unit movement smoothly between tiles. */
+   if( 0 < unit->path_next_percent_x ) {
+      if( unit->path_list[0]->x > tile_x ) {
+         increment = (float)unit->path_next_percent_x / 100;
+         tile_x += increment;
+      } else if( unit->path_list[0]->x < tile_x ) {
+         increment = (float)unit->path_next_percent_x / 100;
+         tile_x -= increment;
+      }
+   }
+
+   if( 0 < unit->path_next_percent_y ) {
+      if( unit->path_list[0]->y > tile_y ) {
+         increment = (float)unit->path_next_percent_y / 100;
+         tile_y += increment;
+      } else if( unit->path_list[0]->y < tile_y ) {
+         increment = (float)unit->path_next_percent_y / 100;
+         tile_y -= increment;
+      }
+   }
+
+   /* Perform transformations. */
    isomap_render_select_unit( unit, ani_frame, rotation, &texture_selection );
 
    graphics_isometric_tile_rotate( 
