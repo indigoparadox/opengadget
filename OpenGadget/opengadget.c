@@ -20,7 +20,10 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <sys/io.h>
+
+#ifdef USE_SDL
 #include <SDL.h>
+#endif /* USE_SDL */
 
 #ifndef WIN32
 #include <dirent.h>
@@ -34,7 +37,7 @@ bstring data_path = NULL;
 
 int main( int argc, char* argv[] ) {
    OG_RETVAL retval = 0;
-   FILE* pak_file = NULL;
+   FILE* pak_handle = NULL;
    FILE* gfx_file = NULL;
    struct pak_file* map_pak = NULL;
    struct isomap* map = NULL;
@@ -50,11 +53,13 @@ int main( int argc, char* argv[] ) {
 
    memset( &map_config, '\0', sizeof( struct tbsloop_config ) );
 
+#ifdef USE_SDL
 #ifdef DEBUG
    SDL_LogSetAllPriority( SDL_LOG_PRIORITY_DEBUG );
 #endif
 
    SDL_LogInfo( SDL_LOG_CATEGORY_APPLICATION, "OpenGadget started..." );
+#endif /* USE_SDL */
 
    data_path = bfromcstr( argv[1] );
 
@@ -88,16 +93,20 @@ int main( int argc, char* argv[] ) {
    if( use_data_directory ) {
       map_data_path = bformat( "%s/MAP.PAK", bdata( data_path ) );
 
-      pak_file = fopen( bdata( map_data_path ), "rb" );
-      if( NULL == pak_file ) {
+      pak_handle = fopen( bdata( map_data_path ), "rb" );
+      if( NULL == pak_handle ) {
+#ifdef USE_SDL
          SDL_LogCritical( SDL_LOG_CATEGORY_APPLICATION, "Unable to open map. Aborting." );
+#endif /* USE_SDL */
          retval = 8;
          goto cleanup;
       }
 
-      map_pak = pakopener_try_open( pak_file );
+      map_pak = pakopener_try_open( pak_handle );
       if( NULL == map_pak ) {
+#ifdef USE_SDL
          SDL_LogCritical( SDL_LOG_CATEGORY_APPLICATION, "Unable to open map. Aborting." );
+#endif /* USE_SDL */
          retval = 8;
          goto cleanup;
       }
@@ -106,7 +115,9 @@ int main( int argc, char* argv[] ) {
 
       map_data = pakopener_open_entry( map_pak, entry );
       if( NULL == map_data ) {
+#ifdef USE_SDL
          SDL_LogCritical( SDL_LOG_CATEGORY_APPLICATION, "Unable to open map. Aborting." );
+#endif /* USE_SDL */
          retval = 8;
          goto cleanup;
       }
@@ -114,20 +125,22 @@ int main( int argc, char* argv[] ) {
       map_config.map_name = bfromcstr( entry->name );
       map_config.map = isomap_load_map( map_data, entry->unpacked_size );
    } else {
-      pak_file = fopen( bdata( data_path ), "rb" );
-      if( NULL == pak_file ) {
+      pak_handle = fopen( bdata( data_path ), "rb" );
+      if( NULL == pak_handle ) {
+#ifdef USE_SDL
          SDL_LogCritical( SDL_LOG_CATEGORY_APPLICATION, "Unable to open map. Aborting." );
+#endif /* USE_SDL */
          retval = 8;
          goto cleanup;
       }
 
-      fseek( pak_file, 0, SEEK_END );
-      data_size = ftell( pak_file );
+      fseek( pak_handle, 0, SEEK_END );
+      data_size = ftell( pak_handle );
       map_data = calloc( data_size, sizeof( uint8_t ) );
-      fseek( pak_file, 0, SEEK_SET );
-      fread( map_data, sizeof( uint8_t ), data_size, pak_file );
-      fclose( pak_file );
-      pak_file = NULL;
+      fseek( pak_handle, 0, SEEK_SET );
+      fread( map_data, sizeof( uint8_t ), data_size, pak_handle );
+      //fclose( pak_file );
+      //pak_file = NULL;
 
       map_config.map_name = bstrcpy( data_path );
       map_config.map = isomap_load_map( map_data, data_size );
@@ -153,8 +166,8 @@ int main( int argc, char* argv[] ) {
 
 cleanup:
 
-   if( NULL != pak_file ) {
-      fclose( pak_file );
+   if( NULL != pak_handle ) {
+      fclose( pak_handle );
    }
 
    if( NULL != map_config.map_name ) {
@@ -172,7 +185,9 @@ cleanup:
 
    graphics_cleanup();
 
+#ifdef USE_SDL
    SDL_Quit();
+#endif /* USE_SDL */
 
    return retval;
 }

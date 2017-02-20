@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="OpenGadget" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/OpenGadget" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="GADGETT/Data" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option parameters="GADGETT/Data" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/OpenGadget" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add directory="/usr/include/SDL2" />
+		</Compiler>
+		<Linker>
+			<Add library="SDL2" />
+			<Add library="SDL2_ttf" />
+			<Add library="SDL2_image" />
+		</Linker>
+		<Unit filename="OpenGadget/defines.h" />
+		<Unit filename="OpenGadget/dep/arckogado.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="OpenGadget/dep/arckogako.h" />
+		<Unit filename="OpenGadget/dep/bstrlib.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="OpenGadget/dep/bstrlib.h" />
+		<Unit filename="OpenGadget/graphics.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="OpenGadget/graphics.h" />
+		<Unit filename="OpenGadget/isomap.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="OpenGadget/isomap.h" />
+		<Unit filename="OpenGadget/isomap_render.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="OpenGadget/isomap_render.h" />
+		<Unit filename="OpenGadget/isomap_terrain.h" />
+		<Unit filename="OpenGadget/opengadget.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="OpenGadget/tbsbattle.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="OpenGadget/tbsbattle.h" />
+		<Unit filename="OpenGadget/tbsloop.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="OpenGadget/tbsloop.h" />
+		<Unit filename="OpenGadget/units.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="OpenGadget/units.h" />
+		<Extensions>
+			<code_completion />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

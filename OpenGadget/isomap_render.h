@@ -53,7 +53,7 @@ typedef enum {
 
 struct isomap_render_texture {
    int texture_index;
-   SDL_Rect sprite_rect;
+   OG_Rect sprite_rect;
 };
 
 #define isomap_render_adjacent( tile_1, tile_2 ) \
@@ -90,18 +90,18 @@ OG_RETVAL isomap_render_load_textures( const bstring data_path );
 void isomap_render_cleanup( void );
 void isomap_render_draw_tile(
    const struct isomap_tile* tile,
-   const SDL_Rect* viewport,
+   const OG_Rect* viewport,
    const GRAPHICS_ROTATE rotation
 );
 void isomap_render_draw_unit(
    const struct units_unit* unit,
    const uint8_t ani_frame,
-   const SDL_Rect* viewport,
+   const OG_Rect* viewport,
    const GRAPHICS_ROTATE rotation
 );
 void isomap_render_loop(
    const struct isomap* map,
-   const SDL_Rect* viewport,
+   const OG_Rect* viewport,
    GRAPHICS_ROTATE rotation,
    int mouse_tile_x,
    int mouse_tile_y

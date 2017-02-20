@@ -82,6 +82,7 @@ static void tbsloop_unit_move_start( struct tbsloop_config* config, struct isoma
    units_move( config->moving_unit, config->moving_unit->tile, NULL, 0, 0, tile_dst );
 }
 
+#ifdef USE_SDL
 static void tbsloop_handle_mouseup( SDL_Event* event, struct tbsloop_config* config ){
    int mouse_tile_x = 0, mouse_tile_y = 0, active_tile_index = -1;
    struct units_unit* unit_test = NULL;
@@ -137,6 +138,7 @@ static void tbsloop_handle_mouseup( SDL_Event* event, struct tbsloop_config* con
          break;
    }
 }
+#endif /* USE_SDL */
 
 static void tbsloop_scrolling_state( TBSLOOP_STATE new_state, struct tbsloop_config* config ) {
    if(
@@ -155,7 +157,9 @@ static void tbsloop_scrolling_state( TBSLOOP_STATE new_state, struct tbsloop_con
 OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
    OG_RETVAL retval = 0;
    int i = 0;
+#ifdef USE_SDL
    SDL_Event event;
+#endif /* USE_SDL */
    bstring new_title = NULL;
    int mouse_tile_x = 0, mouse_tile_y = 0;
 
@@ -176,10 +180,13 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
    config->viewport.x = -200;
    config->viewport.y = 200;
 
+#ifdef USE_SDL
    SDL_LogInfo( SDL_LOG_CATEGORY_APPLICATION, "Started strategy mode with map: %d x %d", config->map->width, config->map->height );
+#endif /* USE_SDL */
 
    while( 1 ) {
 
+#ifdef USE_SDL
       while( SDL_PollEvent( &event ) ) {
          switch( event.type ) {
             case SDL_QUIT:
@@ -254,6 +261,7 @@ OG_RETVAL tbsloop_loop( struct tbsloop_config* config ) {
                break;
          }
       }
+#endif /* USE_SDL */
 
       /* Perform any animated actions. */
       tbsloop_unit_move_step( config );
