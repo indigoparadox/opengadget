@@ -3,3 +3,5 @@ syntax: glob
 Debug
 *.user
 TestData
+extracted
+GADGETT

@@ -1,13 +1,13 @@
 
 /* This file is part of OpenGadget.
  *
- * OpenGadget is free software: you can redistribute it and/or modify it 
+ * OpenGadget is free software: you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the Free
  * Software Foundation, either version 3 of the License, or (at your option)
  * any later version.
  *
  * OpenGadget is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
  * more details.
  *
@@ -40,7 +40,11 @@ OG_RETVAL graphics_init( void ) {
       goto cleanup;
    }
 
+#ifdef WIN32
    opengadget_renderer = SDL_CreateRenderer( opengadget_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC );
+#else
+   opengadget_renderer = SDL_CreateRenderer( opengadget_window, -1, SDL_RENDERER_SOFTWARE );
+#endif /* WIN32 */
    if( NULL == opengadget_renderer ) {
       SDL_LogCritical( SDL_LOG_CATEGORY_VIDEO, "SDL_CreateRenderer: %s", SDL_GetError() );
       retval = 4;
@@ -122,7 +126,7 @@ SDL_Texture* graphics_image_load( const bstring image_name, const struct pak_fil
    SDL_RWops* image_rw = NULL;
    SDL_Texture* texture_out = NULL;
    SDL_Surface* surface_formatted = NULL;
-   
+
    for( i = 0 ; pak->count > i ; i++ ) {
       /* TODO: Pick the shortest length possible so we don't overflow. */
       if( 0 == strncmp( bdata( image_name ), pak->entries[i].name, blength( image_name ) ) ) {

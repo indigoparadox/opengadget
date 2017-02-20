@@ -15,11 +15,16 @@
 * with OpenGadget.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <SDL.h>
 #include <stdio.h>
-#include <io.h>
 #include <sys/types.h>
+#include <sys/time.h>
 #include <sys/stat.h>
+#include <sys/io.h>
+#include <SDL.h>
+
+#ifndef WIN32
+#include <dirent.h>
+#endif /* WIN32 */
 
 #include "dep/arckogako.h"
 #include "isomap.h"
@@ -41,6 +46,7 @@ int main( int argc, char* argv[] ) {
    long data_size;
    int i;
    struct pak_entry* entry;
+   bstring data_dir_path = NULL;
 
    memset( &map_config, '\0', sizeof( struct tbsloop_config ) );
 
@@ -52,6 +58,21 @@ int main( int argc, char* argv[] ) {
 
    data_path = bfromcstr( argv[1] );
 
+#if 0
+   printf( bdata( data_path ) );
+   DIR           *d;
+   struct dirent *dir;
+   d = opendir( bdata( data_path ) );
+   if( d ) {
+      while ( (dir = readdir(d)) != NULL ) {
+         printf( "%s\n", dir->d_name );
+      }
+      closedir( d );
+   }
+   //getchar();
+#endif
+
+#ifdef WIN32
    if( 0 == _access( bdata( data_path ), 0 ) ) {
       stat( bdata( data_path ), &status );
       use_data_directory = ((status.st_mode & S_IFDIR) != 0);
@@ -59,10 +80,13 @@ int main( int argc, char* argv[] ) {
       retval = 16;
       goto cleanup;
    }
-   
+#else
+    use_data_directory = 1;
+#endif /* WIN32 */
+
    /* TODO: Abstract PAK loading so that we can standardize logging. */
    if( use_data_directory ) {
-      map_data_path = bformat( "%s\\map.pak", argv[1] );
+      map_data_path = bformat( "%s/MAP.PAK", bdata( data_path ) );
 
       pak_file = fopen( bdata( map_data_path ), "rb" );
       if( NULL == pak_file ) {
@@ -128,7 +152,7 @@ int main( int argc, char* argv[] ) {
    retval = tbsloop_loop( &map_config );
 
 cleanup:
-   
+
    if( NULL != pak_file ) {
       fclose( pak_file );
    }
