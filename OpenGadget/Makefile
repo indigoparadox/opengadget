@@ -6,10 +6,13 @@ DEPS=$(patsubst %.c,%.o,$(DEPS_SRC))
 CFLAGS=-I/usr/include/SDL2 -I/usr/include/i386-linux-gnu
 LIBS=-lSDL2 -lm -lSDL2_ttf -lSDL2_image
 
-all: opengadget
+all: opengadget extractor
 
 opengadget: $(DEPS)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+extractor:
+	$(CC) -o $@ $@.c dep/arckogado.c
 
 %.o: %.c
 	$(CC) -c -o $@ $< $(CFLAGS)
