@@ -5,3 +5,6 @@ Debug
 TestData
 extracted
 GADGETT
+glob:*.layout
+glob:*.swp
+glob:*.depend

@@ -27,6 +27,15 @@
 typedef SDL_Texture OG_Texture;
 typedef SDL_Rect OG_Rect;
 #elif defined( USE_ALLEGRO )
+#include <allegro/system.h>
+#include <allegro/graphics.h>
+typedef BITMAP OG_Texture;
+typedef struct {
+    int x;
+    int y;
+    int w;
+    int h;
+} OG_Rect;
 #else
 typedef void OG_Texture;
 typedef struct {

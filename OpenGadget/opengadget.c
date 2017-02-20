@@ -21,10 +21,6 @@
 #include <sys/stat.h>
 #include <sys/io.h>
 
-#ifdef USE_SDL
-#include <SDL.h>
-#endif /* USE_SDL */
-
 #ifndef WIN32
 #include <dirent.h>
 #endif /* WIN32 */
@@ -51,15 +47,17 @@ int main( int argc, char* argv[] ) {
    struct pak_entry* entry;
    bstring data_dir_path = NULL;
 
-   memset( &map_config, '\0', sizeof( struct tbsloop_config ) );
-
 #ifdef USE_SDL
 #ifdef DEBUG
    SDL_LogSetAllPriority( SDL_LOG_PRIORITY_DEBUG );
 #endif
 
    SDL_LogInfo( SDL_LOG_CATEGORY_APPLICATION, "OpenGadget started..." );
+#elif defined USE_ALLEGRO
+    allegro_init();
 #endif /* USE_SDL */
+
+   memset( &map_config, '\0', sizeof( struct tbsloop_config ) );
 
    data_path = bfromcstr( argv[1] );
 
@@ -187,7 +185,12 @@ cleanup:
 
 #ifdef USE_SDL
    SDL_Quit();
+#elif defined( USE_ALLEGRO )
+    allegro_exit();
 #endif /* USE_SDL */
 
    return retval;
 }
+#ifdef USE_ALLEGRO
+END_OF_MAIN();
+#endif /* USE_ALLEGRO */

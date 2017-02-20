@@ -22,6 +22,8 @@ SDL_Renderer* opengadget_renderer = NULL;
 SDL_Window* opengadget_window = NULL;
 
 TTF_Font* graphics_fonts[GRAPHICS_FONT_MAX];
+#elif defined USE_ALLEGRO
+BITMAP* graphics_buffer;
 #endif /* USE_SDL */
 
 OG_RETVAL graphics_init( void ) {
@@ -65,6 +67,16 @@ cleanup:
    if( 0 != retval && NULL != opengadget_window ) {
       SDL_DestroyWindow( opengadget_window );
    }
+#elif defined USE_ALLEGRO
+    set_color_depth( 32 );
+    if( set_gfx_mode( GFX_AUTODETECT_WINDOWED, GRAPHICS_SCREEN_WIDTH, GRAPHICS_SCREEN_HEIGHT, 0, 0 ) != 0 ) {
+        allegro_message( "Couldn't set a 32 bit color resolution." );
+        goto cleanup;
+    }
+
+    graphics_buffer = create_bitmap( GRAPHICS_SCREEN_WIDTH, GRAPHICS_SCREEN_HEIGHT );
+
+cleanup:
 #endif /* USE_SDL */
 
    return retval;
@@ -91,12 +103,16 @@ void graphics_set_title( const bstring title ) {
 void graphics_clear( void ) {
 #ifdef USE_SDL
    SDL_RenderClear( opengadget_renderer );
+#elif defined USE_ALLEGRO
+    clear_bitmap( graphics_buffer );
 #endif /* USE_SDL */
 }
 
 void graphics_end_draw( void ) {
 #ifdef USE_SDL
    SDL_RenderPresent( opengadget_renderer );
+#elif defined USE_ALLEGRO
+    blit( graphics_buffer, screen, 0, 0, 0, 0, GRAPHICS_SCREEN_WIDTH, GRAPHICS_SCREEN_HEIGHT );
 #endif /* USE_SDL */
 }
 
@@ -135,15 +151,15 @@ static void graphics_texture_colorkey( OG_Texture* texture, int h, uint8_t r, ui
 
 OG_Texture* graphics_image_load( const bstring image_name, const struct pak_file* pak ) {
    OG_Texture* texture_out = NULL;
-
-#ifdef USE_SDL
    int i;
    const struct pak_entry* entry = NULL;
+#ifdef USE_SDL
    SDL_Surface* surface_temp = NULL;
    SDL_Surface* image_opt = NULL;
-   uint8_t* image_data = NULL;
    SDL_RWops* image_rw = NULL;
    SDL_Surface* surface_formatted = NULL;
+#endif /* USE_SDL */
+   uint8_t* image_data = NULL;
 
    for( i = 0 ; pak->count > i ; i++ ) {
       /* TODO: Pick the shortest length possible so we don't overflow. */
@@ -163,6 +179,8 @@ OG_Texture* graphics_image_load( const bstring image_name, const struct pak_file
       goto cleanup;
    }
 
+
+#ifdef USE_SDL
    image_rw = SDL_RWFromConstMem( image_data, entry->unpacked_size );
 
    surface_temp = IMG_Load_RW( image_rw, 0 );
@@ -193,6 +211,8 @@ cleanup:
    if( NULL != surface_formatted ) {
       SDL_FreeSurface( surface_formatted );
    }
+#elif defined USE_ALLEGRO
+cleanup:
 #endif /* USE_SDL */
 
    return texture_out;
