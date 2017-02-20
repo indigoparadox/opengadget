@@ -69,7 +69,7 @@ struct isomap_tile {
    struct units_unit* unit;
    struct isomap* map;
    OG_BOOL movable;
-#if DEBUG
+#if defined( USE_SDL ) && defined( DEBUG )
    SDL_Surface* coords;
 #endif /* DEBUG */
 };

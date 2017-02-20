@@ -50,7 +50,7 @@ struct pak_file* pakopener_try_open( FILE* file ) {
    uint32_t index_offset_raw;
    long index_offset;
    long index_offset_max;
-   unsigned int index_size;
+   //unsigned int index_size;
    long data_offset = 0x10;
    struct pak_file* file_out = NULL;
    int failure = 0;
@@ -103,10 +103,10 @@ struct pak_file* pakopener_try_open( FILE* file ) {
       goto cleanup;
    }
 
-   index_size = count_raw * entry_size;
+   //index_size = count_raw * entry_size;
    //if (index_size > file.View.Reserve (index_offset, index_size))
    //   return null;
-   
+
    //var dir = new List<Entry> (entry_count);
    file_out_len = sizeof( struct pak_file ) + (sizeof( struct pak_entry ) * count_raw);
    file_out = (struct pak_file*)calloc( file_out_len, sizeof( char ) );
@@ -160,7 +160,7 @@ struct pak_file* pakopener_try_open( FILE* file ) {
 
       //if (!entry.CheckPlacement (file.MaxOffset))
       //   return null;
-      if( 
+      if(
          file_out->entries[i].offset >= index_offset_max ||
          file_out->entries[i].size > index_offset_max ||
          file_out->entries[i].offset > index_offset_max - file_out->entries[i].size

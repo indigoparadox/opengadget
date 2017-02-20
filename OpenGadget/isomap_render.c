@@ -36,6 +36,7 @@ OG_RETVAL isomap_render_load_textures( const bstring data_path ) {
    struct tagbstring ui_cursor = bsStatic( "RS_MAPCUR" );
    struct tagbstring ui_marker = bsStatic( "RS_MAPMARK" );
    struct tagbstring ui_bgtile = bsStatic( "UI_ROGOTILE" );
+   OG_Texture* tex_loaded = NULL;
 
    if( 0 != isomap_render_textures_loaded ) {
       goto cleanup;
@@ -63,21 +64,24 @@ OG_RETVAL isomap_render_load_textures( const bstring data_path ) {
    /* Load terrain tiles. */
    for( i = 0 ; ISOMAP_BUILDINGS_TILES_OFFSET > i ; i++ ) {
       bassignformat( gfx_tile_name, gfx_terrain_name_format, 1, i, 0 );
-      isomap_render_terrain_textures[i] = graphics_image_load( gfx_tile_name, gfx_data_pak );
+      tex_loaded = graphics_image_load( gfx_tile_name, gfx_data_pak );
+      isomap_render_terrain_textures[i] = tex_loaded;
    }
 
    /* Load buildings tiles. */
    for( i = 0 ; (0x1B - ISOMAP_BUILDINGS_TILES_OFFSET) > i ; i++ ) {
       bassignformat( gfx_tile_name, gfx_bldg_name_format, 0, i, 0 );
-      isomap_render_terrain_textures[ISOMAP_BUILDINGS_TILES_OFFSET + i] = graphics_image_load( gfx_tile_name, gfx_data_pak );
+      tex_loaded = graphics_image_load( gfx_tile_name, gfx_data_pak );
+      isomap_render_terrain_textures[ISOMAP_BUILDINGS_TILES_OFFSET + i] = tex_loaded;
    }
 
    /* Load the units. */
    for( t = 0 ; t < UNITS_TEAM_MAX ; t++ ) {
       for( i = 0 ; ISOMAP_RENDER_UNIT_TEXTURES_MAX > i ; i++ ) {
          bassignformat( gfx_tile_name, gfx_unit_name_format, t, i );
+         tex_loaded = graphics_image_load( gfx_tile_name, gfx_data_pak );
          isomap_render_unit_textures[(t * ISOMAP_RENDER_UNIT_TEXTURES_MAX) + i]
-            = graphics_image_load( gfx_tile_name, gfx_data_pak );
+            = tex_loaded;
       }
    }
 
@@ -266,7 +270,7 @@ void isomap_render_draw_tile(
    int i = 0, screen_x, screen_y, tile_x, tile_y;
    OG_Texture* sprite_texture = NULL;
    struct isomap_render_texture texture_selection;
-#ifdef DEBUG
+#if defined( USE_SDL ) && defined( DEBUG )
    SDL_Rect coords_src;
    SDL_Rect coords_dst;
 #endif /* DEBUG */
@@ -314,7 +318,7 @@ void isomap_render_draw_tile(
       screen_y
    );
 
-#if DEBUG
+#if defined( USE_SDL ) && defined( DEBUG )
    if( NULL != tile->coords ) {
       coords_src.x = 0;
       coords_src.y = 0;
@@ -511,7 +515,7 @@ void isomap_render_loop(
                break;
       }
 
-#if DEBUG
+#if defined( USE_SDL ) && defined( DEBUG )
       /* TODO: Clean these up, somewhere. */
       if( NULL == map->tiles[j].coords ) {
          bassignformat( coords, "%d, %d", map->tiles[j].x, map->tiles[j].y );
