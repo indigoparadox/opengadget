@@ -74,7 +74,7 @@ struct isomap* isomap_load_map( uint8_t* map_data, uint32_t map_data_len ) {
          isomap_out->tiles[index].y = y_tmp;
          isomap_out->tiles[index].map = isomap_out;
          isomap_out->tiles[index].index = index;
-#if DEBUG
+#if defined( USE_SDL ) && defined( DEBUG )
          isomap_out->tiles[index].coords = NULL;
 #endif /* DEBUG */
          index++;
@@ -109,7 +109,7 @@ struct isomap* isomap_load_map( uint8_t* map_data, uint32_t map_data_len ) {
 
       isomap_out->tiles[isomap_get_tile( x_tmp, y_tmp, isomap_out )].unit =
          &(isomap_out->units[units_cursor]);
-      isomap_out->units[units_cursor].tile = 
+      isomap_out->units[units_cursor].tile =
          &(isomap_out->tiles[isomap_get_tile( x_tmp, y_tmp, isomap_out )]);
 
       /* TODO: Vary this for each unit. */
@@ -119,7 +119,7 @@ struct isomap* isomap_load_map( uint8_t* map_data, uint32_t map_data_len ) {
    }
 
 cleanup:
-   
+
    return isomap_out;
 }
 

@@ -37,7 +37,7 @@ int main( int argc, char* argv[] ) {
    FILE* gfx_file = NULL;
    struct pak_file* map_pak = NULL;
    struct isomap* map = NULL;
-   struct tbsloop_config map_config;
+   struct tbsloop_config map_config = { 0 };
    uint8_t* map_data = NULL;
    bstring map_data_path = NULL;
    struct stat status;
@@ -54,10 +54,18 @@ int main( int argc, char* argv[] ) {
 
    SDL_LogInfo( SDL_LOG_CATEGORY_APPLICATION, "OpenGadget started..." );
 #elif defined USE_ALLEGRO
-    allegro_init();
-#endif /* USE_SDL */
+    if( allegro_init() ) {
+        allegro_message( "Could not initialize Allegro." );
+        retval = 1;
+        goto cleanup;
+    }
 
-   memset( &map_config, '\0', sizeof( struct tbsloop_config ) );
+    if( loadpng_init() ) {
+        allegro_message( "Could not initialize PNG loader." );
+        retval = 1;
+        goto cleanup;
+    }
+#endif /* USE_SDL */
 
    data_path = bfromcstr( argv[1] );
 

@@ -23,7 +23,111 @@ SDL_Window* opengadget_window = NULL;
 
 TTF_Font* graphics_fonts[GRAPHICS_FONT_MAX];
 #elif defined USE_ALLEGRO
+#include <loadpng.h>
+
 BITMAP* graphics_buffer;
+
+typedef struct _OG_PAK_INFO {
+   AL_CONST unsigned char *block;
+   long length;
+   long offset;
+} OG_PAK_INFO;
+
+static int og_pak_fclose( void* userdata ) {
+   return 0;
+}
+
+static int og_pak_getc( void* userdata ) {
+   OG_PAK_INFO* info = userdata;
+   ASSERT( info );
+   ASSERT( info->offset <= info->length );
+
+   if( info->offset == info->length ) {
+      return EOF;
+   } else {
+      return info->block[info->offset++];
+   }
+}
+
+static int og_pak_ungetc( int c, void* userdata ) {
+   OG_PAK_INFO* info = userdata;
+   unsigned char ch = c;
+
+   if( (0 < info->offset) && (info->block[info->offset - 1] == ch) ) {
+      return ch;
+   } else {
+      return EOF;
+   }
+}
+
+static long og_pak_fread( void* p, long n, void* userdata ) {
+   OG_PAK_INFO* info = userdata;
+   size_t actual;
+   ASSERT( info );
+   ASSERT( info->offset <= info->length );
+
+   actual = MIN( n, info->length - info->offset );
+
+   memcpy( p, info->block + info->offset, actual );
+   info->offset += actual;
+
+   ASSERT( info->offset <= info->length );
+
+   return actual;
+}
+
+static int og_pak_putc( int c, void* userdata ) {
+    /* STUB */
+    return EOF;
+}
+
+static long og_pak_fwrite( const void* p, long n, void* userdata ) {
+    /* STUB */
+    return 0;
+}
+
+static int og_pak_fseek( void* userdata, int offset ) {
+   OG_PAK_INFO* info = userdata;
+   long actual;
+
+   ASSERT( info );
+   ASSERT( info->offset <= info->length );
+
+   actual = MIN( offset, info->length - info->offset );
+
+   info->offset += actual;
+
+   ASSERT( info->offset <= info->length );
+
+   if( offset == actual ) {
+      return 0;
+   } else {
+      return -1;
+   }
+}
+
+static int og_pak_feof( void* userdata ) {
+   OG_PAK_INFO* info = userdata;
+
+   return info->offset >= info->length;
+}
+
+static int og_pak_ferror( void* userdata ) {
+    /* STUB */
+    return FALSE;
+}
+
+const PACKFILE_VTABLE og_pak_vtable = {
+   og_pak_fclose,
+   og_pak_getc,
+   og_pak_ungetc,
+   og_pak_fread,
+   og_pak_putc,
+   og_pak_fwrite,
+   og_pak_fseek,
+   og_pak_feof,
+   og_pak_ferror,
+};
 #endif /* USE_SDL */
 
 OG_RETVAL graphics_init( void ) {
@@ -70,7 +174,8 @@ cleanup:
 #elif defined USE_ALLEGRO
     set_color_depth( 32 );
     if( set_gfx_mode( GFX_AUTODETECT_WINDOWED, GRAPHICS_SCREEN_WIDTH, GRAPHICS_SCREEN_HEIGHT, 0, 0 ) != 0 ) {
-        allegro_message( "Couldn't set a 32 bit color resolution." );
+        allegro_message( "Could not set a 32 bit color resolution." );
+        retval = 1;
         goto cleanup;
     }
 
@@ -90,6 +195,10 @@ void graphics_cleanup( void ) {
 
    if( NULL != opengadget_window ) {
       SDL_DestroyWindow( opengadget_window );
+   }
+#elif defined USE_ALLEGRO
+   if( NULL != graphics_buffer ) {
+      destroy_bitmap( graphics_buffer );
    }
 #endif /* USE_SDL */
 }
@@ -119,6 +228,8 @@ void graphics_end_draw( void ) {
 void graphics_sleep( const int milliseconds ) {
 #ifdef USE_SDL
    SDL_Delay( milliseconds );
+#elif defined USE_ALLEGRO
+   usleep( 1000 );
 #endif /* USE_SDL */
 }
 
@@ -158,12 +269,16 @@ OG_Texture* graphics_image_load( const bstring image_name, const struct pak_file
    SDL_Surface* image_opt = NULL;
    SDL_RWops* image_rw = NULL;
    SDL_Surface* surface_formatted = NULL;
+#elif defined USE_ALLEGRO
+   PALETTE pal;
+   OG_PAK_INFO pak_info;
+   PACKFILE* pak_mem;
 #endif /* USE_SDL */
    uint8_t* image_data = NULL;
 
    for( i = 0 ; pak->count > i ; i++ ) {
       /* TODO: Pick the shortest length possible so we don't overflow. */
-      if( 0 == strncmp( bdata( image_name ), pak->entries[i].name, blength( image_name ) ) ) {
+      if( 0 == strncmp( (char*)bdata( image_name ), pak->entries[i].name, blength( image_name ) ) ) {
          entry = &(pak->entries[i]);
          break;
       }
@@ -178,7 +293,6 @@ OG_Texture* graphics_image_load( const bstring image_name, const struct pak_file
       /* TODO: Error message. */
       goto cleanup;
    }
-
 
 #ifdef USE_SDL
    image_rw = SDL_RWFromConstMem( image_data, entry->unpacked_size );
@@ -212,6 +326,21 @@ cleanup:
       SDL_FreeSurface( surface_formatted );
    }
 #elif defined USE_ALLEGRO
+   pak_info.block = image_data;
+   pak_info.length = entry->unpacked_size;
+   pak_info.offset = 0;
+   pak_mem = pack_fopen_vtable( &og_pak_vtable, &pak_info );
+   if( NULL == pak_mem ) {
+      goto cleanup;
+   }
+   texture_out = load_bmp_pf( pak_mem, NULL );
+   //texture_out = load_memory_png( image_data, entry->unpacked_size, pal );
+   if( NULL == texture_out ) {
+      //allegro_message( "Error opening image file." );
+      goto cleanup;
+   }
+   //set_palette( pal );
+
 cleanup:
 #endif /* USE_SDL */
 
@@ -254,6 +383,8 @@ cleanup:
 void graphics_draw( OG_Texture* texture, OG_Rect* src_rect, OG_Rect* dst_rect ) {
 #ifdef USE_SDL
    SDL_RenderCopy( opengadget_renderer, texture, src_rect, dst_rect );
+#elif defined USE_ALLEGRO
+   blit( texture, graphics_buffer, src_rect->x, src_rect->y, dst_rect->x,dst_rect->y, dst_rect->w, dst_rect->h );
 #endif /* USE_SDL */
 }
 
@@ -284,13 +415,17 @@ void graphics_draw_tile( const OG_Texture* texture, const int src_x, const int s
 }
 
 void graphics_draw_bg( OG_Texture* background ) {
-#ifdef USE_SDL
-   SDL_Rect bg_src;
-   SDL_Rect bg_dst;
+   OG_Rect bg_src;
+   OG_Rect bg_dst;
 
    bg_src.x = 0;
    bg_src.y = 0;
+#ifdef USE_SDL
    SDL_QueryTexture( background, NULL, NULL, &bg_src.w, &bg_src.h );
+#elif defined USE_ALLEGRO
+   bg_src.w = background->w;
+   bg_src.h = background->h;
+#endif /* USE_SDL */
    bg_dst.w = bg_src.w;
    bg_dst.h = bg_src.h;
    for( bg_dst.x = 0 ; GRAPHICS_SCREEN_WIDTH > bg_dst.x ; bg_dst.x += bg_src.w ) {
@@ -298,7 +433,6 @@ void graphics_draw_bg( OG_Texture* background ) {
          graphics_draw( background, &bg_src, &bg_dst );
       }
    }
-#endif /* USE_SDL */
 }
 
 void graphics_transform_isometric_reverse(
@@ -396,5 +530,7 @@ void graphics_transform_isometric(
 void graphics_destroy_texture( OG_Texture* texture ) {
 #ifdef USE_SDL
     SDL_DestroyTexture( texture );
+#elif defined USE_ALLEGRO
+    destroy_bitmap( texture );
 #endif /* USE_SDL */
 }
