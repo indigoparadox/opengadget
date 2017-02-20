@@ -384,7 +384,7 @@ void graphics_draw( OG_Texture* texture, OG_Rect* src_rect, OG_Rect* dst_rect ) 
 #ifdef USE_SDL
    SDL_RenderCopy( opengadget_renderer, texture, src_rect, dst_rect );
 #elif defined USE_ALLEGRO
-   blit( texture, graphics_buffer, src_rect->x, src_rect->y, dst_rect->x,dst_rect->y, dst_rect->w, dst_rect->h );
+   masked_blit( texture, graphics_buffer, src_rect->x, src_rect->y, dst_rect->x,dst_rect->y, dst_rect->w, dst_rect->h );
 #endif /* USE_SDL */
 }
 
