@@ -18,10 +18,6 @@
 #ifndef TBSLOOP_H
 #define TBSLOOP_H
 
-#ifdef USE_SDL
-#include <SDL.h>
-#endif /* USE_SDL */
-
 #include "defines.h"
 #include "graphics.h"
 #include "isomap.h"
