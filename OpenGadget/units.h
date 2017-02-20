@@ -19,6 +19,7 @@
 #define UNITS_H
 
 #include <stdint.h>
+#include <SDL_log.h>
 
 #include "defines.h"
 #include "isomap.h"
@@ -75,8 +76,8 @@ struct units_unit {
    int path_next_percent_y;
 };
 
-void units_walk_range( struct isomap_tile* tile, struct unit* unit, int mobility );
-OG_BOOL units_move( struct units_unit* unit, struct isomap_tile* tile_current, struct isomap_tile** tiles_previous, int tiles_previous_count, int distance, struct isomap_tile* tile_dst );
+void units_walk_range( struct isomap_tile* tile, struct units_unit* unit, int mobility );
+OG_BOOL units_move( struct units_unit* unit, struct isomap_tile* tile_current, struct isomap_tile*** tiles_previous, int* tiles_previous_count, int distance, struct isomap_tile* tile_dst );
 int units_get_mobility_range( struct units_unit* unit );
 int units_get_mobility_cost( struct units_unit* unit, struct isomap_tile* tile );
 

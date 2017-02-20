@@ -21,9 +21,10 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
+#include <SDL_log.h>
 
-#include "dep\bstrlib.h"
-#include "dep\arckogako.h"
+#include "dep/bstrlib.h"
+#include "dep/arckogako.h"
 #include "defines.h"
 
 #define GRAPHICS_SCREEN_WIDTH 640

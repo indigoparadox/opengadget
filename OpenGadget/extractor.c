@@ -27,7 +27,7 @@ int main( int argc, char* argv[] ) {
 
    entry = &(pak->entries[extract]);
 
-   contents = pakopener_open_entry( pak, file, entry );
+   contents = pakopener_open_entry( pak, entry );
 
    file_out = fopen( entry->name, "wb" );
 

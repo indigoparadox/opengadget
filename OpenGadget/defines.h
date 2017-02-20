@@ -19,7 +19,9 @@
 #define DEFINES_H
 
 #include <stdint.h>
+#ifdef USE_SDL_LOG
 #include <SDL_log.h>
+#endif /* USE_SDL_LOG */
 #include <assert.h>
 
 #include "dep/bstrlib.h"
