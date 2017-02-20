@@ -19,7 +19,9 @@
 #define UNITS_H
 
 #include <stdint.h>
+#ifdef USE_SDL
 #include <SDL_log.h>
+#endif /* USE_SDL */
 
 #include "defines.h"
 #include "isomap.h"

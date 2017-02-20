@@ -18,10 +18,24 @@
 #ifndef GRAPHICS_H
 #define GRAPHICS_H
 
+#ifdef USE_SDL
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 #include <SDL_log.h>
+
+typedef SDL_Texture OG_Texture;
+typedef SDL_Rect OG_Rect;
+#elif defined( USE_ALLEGRO )
+#else
+typedef void OG_Texture;
+typedef struct {
+    int x;
+    int y;
+    int w;
+    int h;
+} OG_Rect;
+#endif /* USE_SDL */
 
 #include "dep/bstrlib.h"
 #include "dep/arckogako.h"
@@ -56,11 +70,11 @@ void graphics_set_title( const bstring title );
 void graphics_clear( void );
 void graphics_end_draw( void );
 void graphics_sleep( const int milliseconds );
-SDL_Texture* graphics_image_load( const bstring image_name, const struct pak_file* pak );
-SDL_Texture* graphics_text_create( bstring text, GRAPHICS_FONT font_index, int size );
-void graphics_draw( SDL_Texture* texture, SDL_Rect* src_rect, SDL_Rect* dst_rect );
-void graphics_draw_tile( const SDL_Texture* texture, const int src_x, const int src_y, const int dest_x, const int dest_y );
-void graphics_draw_bg( SDL_Texture* background );
+OG_Texture* graphics_image_load( const bstring image_name, const struct pak_file* pak );
+OG_Texture* graphics_text_create( bstring text, GRAPHICS_FONT font_index, int size );
+void graphics_draw( OG_Texture* texture, OG_Rect* src_rect, OG_Rect* dst_rect );
+void graphics_draw_tile( const OG_Texture* texture, const int src_x, const int src_y, const int dest_x, const int dest_y );
+void graphics_draw_bg( OG_Texture* background );
 void graphics_transform_isometric_reverse(
    int* tile_x,
    int* tile_y,
@@ -68,7 +82,7 @@ void graphics_transform_isometric_reverse(
    int screen_y,
    int map_width,
    int map_height,
-   const SDL_Rect* viewport,
+   const OG_Rect* viewport,
    int rotation
 );
 #ifdef USE_INLINE_HELPERS
@@ -89,7 +103,7 @@ inline
 #endif /* _MSC_VER */
 #endif /* USE_INLINE_HELPERS */
 void graphics_transform_isometric(
-   float tile_x, float tile_y, int* screen_x, int* screen_y, const SDL_Rect* viewport
+   float tile_x, float tile_y, int* screen_x, int* screen_y, const OG_Rect* viewport
 );
 
 #endif /* GRAPHICS_H */

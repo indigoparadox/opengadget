@@ -17,14 +17,17 @@
 
 #include "graphics.h"
 
+#ifdef USE_SDL
 SDL_Renderer* opengadget_renderer = NULL;
 SDL_Window* opengadget_window = NULL;
 
 TTF_Font* graphics_fonts[GRAPHICS_FONT_MAX];
+#endif /* USE_SDL */
 
 OG_RETVAL graphics_init( void ) {
    OG_RETVAL retval = 0;
 
+#ifdef USE_SDL
    memset( graphics_fonts, '\0', sizeof( TTF_Font* ) * GRAPHICS_FONT_MAX );
 
    retval = SDL_Init( SDL_INIT_VIDEO );
@@ -62,11 +65,13 @@ cleanup:
    if( 0 != retval && NULL != opengadget_window ) {
       SDL_DestroyWindow( opengadget_window );
    }
+#endif /* USE_SDL */
 
    return retval;
 }
 
 void graphics_cleanup( void ) {
+#ifdef USE_SDL
    if( NULL != opengadget_renderer ) {
       SDL_DestroyRenderer( opengadget_renderer );
    }
@@ -74,25 +79,35 @@ void graphics_cleanup( void ) {
    if( NULL != opengadget_window ) {
       SDL_DestroyWindow( opengadget_window );
    }
+#endif /* USE_SDL */
 }
 
 void graphics_set_title( const bstring title ) {
+#ifdef USE_SDL
    SDL_SetWindowTitle( opengadget_window, bdata( title ) );
+#endif /* USE_SDL */
 }
 
 void graphics_clear( void ) {
+#ifdef USE_SDL
    SDL_RenderClear( opengadget_renderer );
+#endif /* USE_SDL */
 }
 
 void graphics_end_draw( void ) {
+#ifdef USE_SDL
    SDL_RenderPresent( opengadget_renderer );
+#endif /* USE_SDL */
 }
 
 void graphics_sleep( const int milliseconds ) {
+#ifdef USE_SDL
    SDL_Delay( milliseconds );
+#endif /* USE_SDL */
 }
 
-static void graphics_texture_colorkey( SDL_Texture* texture, int h, uint8_t r, uint8_t g, uint8_t b ) {
+static void graphics_texture_colorkey( OG_Texture* texture, int h, uint8_t r, uint8_t g, uint8_t b ) {
+#ifdef USE_SDL
    uint32_t* pixels;
    int pitch;
    uint32_t color_key;
@@ -115,16 +130,19 @@ static void graphics_texture_colorkey( SDL_Texture* texture, int h, uint8_t r, u
    }
 
    SDL_UnlockTexture( texture );
+#endif /* USE_SDL */
 }
 
-SDL_Texture* graphics_image_load( const bstring image_name, const struct pak_file* pak ) {
+OG_Texture* graphics_image_load( const bstring image_name, const struct pak_file* pak ) {
+   OG_Texture* texture_out = NULL;
+
+#ifdef USE_SDL
    int i;
    const struct pak_entry* entry = NULL;
    SDL_Surface* surface_temp = NULL;
    SDL_Surface* image_opt = NULL;
    uint8_t* image_data = NULL;
    SDL_RWops* image_rw = NULL;
-   SDL_Texture* texture_out = NULL;
    SDL_Surface* surface_formatted = NULL;
 
    for( i = 0 ; pak->count > i ; i++ ) {
@@ -175,14 +193,17 @@ cleanup:
    if( NULL != surface_formatted ) {
       SDL_FreeSurface( surface_formatted );
    }
+#endif /* USE_SDL */
 
    return texture_out;
 }
 
-SDL_Texture* graphics_text_create( bstring text, GRAPHICS_FONT font_index, int size ) {
+OG_Texture* graphics_text_create( bstring text, GRAPHICS_FONT font_index, int size ) {
+   OG_Texture* message_texture = NULL;
+
+#ifdef USE_SDL
    SDL_Color white = { 0, 0, 0 };
    SDL_Surface* message_surface = NULL;
-   SDL_Texture* message_texture = NULL;
 
    if( NULL == graphics_fonts[font_index] ) {
       switch( font_index ) {
@@ -205,23 +226,26 @@ cleanup:
    if( NULL != message_surface ) {
       SDL_FreeSurface( message_surface );
    }
+#endif /* USE_SDL */
 
    return message_texture;
 }
 
-void graphics_draw( SDL_Texture* texture, SDL_Rect* src_rect, SDL_Rect* dst_rect ) {
+void graphics_draw( OG_Texture* texture, OG_Rect* src_rect, OG_Rect* dst_rect ) {
+#ifdef USE_SDL
    SDL_RenderCopy( opengadget_renderer, texture, src_rect, dst_rect );
+#endif /* USE_SDL */
 }
 
-void graphics_draw_tile( const SDL_Texture* texture, const int src_x, const int src_y, const int dest_x, const int dest_y ) {
-   static SDL_Rect tile_rect;
-   static SDL_Rect screen_rect;
+void graphics_draw_tile( const OG_Texture* texture, const int src_x, const int src_y, const int dest_x, const int dest_y ) {
+   static OG_Rect tile_rect;
+   static OG_Rect screen_rect;
    static uint8_t rects_init = 0;
 
    if( 0 == rects_init ) {
       /* Setup rectangles for the first time. */
-      memset( &tile_rect, '\0', sizeof( SDL_Rect ) );
-      memset( &screen_rect, '\0', sizeof( SDL_Rect ) );
+      memset( &tile_rect, '\0', sizeof( OG_Rect ) );
+      memset( &screen_rect, '\0', sizeof( OG_Rect ) );
 
       screen_rect.w = GRAPHICS_TILE_WIDTH;
       screen_rect.h = GRAPHICS_TILE_HEIGHT;
@@ -239,7 +263,8 @@ void graphics_draw_tile( const SDL_Texture* texture, const int src_x, const int 
    graphics_draw( texture, &tile_rect, &screen_rect );
 }
 
-void graphics_draw_bg( SDL_Texture* background ) {
+void graphics_draw_bg( OG_Texture* background ) {
+#ifdef USE_SDL
    SDL_Rect bg_src;
    SDL_Rect bg_dst;
 
@@ -253,6 +278,7 @@ void graphics_draw_bg( SDL_Texture* background ) {
          graphics_draw( background, &bg_src, &bg_dst );
       }
    }
+#endif /* USE_SDL */
 }
 
 void graphics_transform_isometric_reverse(
@@ -262,7 +288,7 @@ void graphics_transform_isometric_reverse(
    int screen_y,
    int map_width,
    int map_height,
-   const SDL_Rect* viewport,
+   const OG_Rect* viewport,
    int rotation
 ) {
    screen_x -= viewport->x;
@@ -339,10 +365,16 @@ inline
 #endif /* _MSC_VER */
 #endif /* USE_INLINE_HELPERS */
 void graphics_transform_isometric(
-   float tile_x, float tile_y, int* screen_x, int* screen_y, const SDL_Rect* viewport
+   float tile_x, float tile_y, int* screen_x, int* screen_y, const OG_Rect* viewport
 ) {
    *screen_x = viewport->x + (tile_x * GRAPHICS_TILE_WIDTH / 2) + \
       (tile_y * GRAPHICS_TILE_WIDTH / 2); \
    *screen_y = viewport->y + ((tile_y * GRAPHICS_TILE_OFFSET_X / 2) - \
          (tile_x * GRAPHICS_TILE_OFFSET_X / 2));
+}
+
+void graphics_destroy_texture( OG_Texture* texture ) {
+#ifdef USE_SDL
+    SDL_DestroyTexture( texture );
+#endif /* USE_SDL */
 }

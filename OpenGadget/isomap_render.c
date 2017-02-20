@@ -17,9 +17,9 @@
 
 #include "isomap_render.h"
 
-static SDL_Texture* isomap_render_terrain_textures[0xff];
-static SDL_Texture* isomap_render_unit_textures[UNITS_TEAM_MAX * ISOMAP_RENDER_UNIT_TEXTURES_MAX];
-static SDL_Texture* isomap_render_ui_textures[0xff];
+static OG_Texture* isomap_render_terrain_textures[0xff];
+static OG_Texture* isomap_render_unit_textures[UNITS_TEAM_MAX * ISOMAP_RENDER_UNIT_TEXTURES_MAX];
+static OG_Texture* isomap_render_ui_textures[0xff];
 static uint8_t isomap_render_textures_loaded = 0;
 
 OG_RETVAL isomap_render_load_textures( const bstring data_path ) {
@@ -27,6 +27,7 @@ OG_RETVAL isomap_render_load_textures( const bstring data_path ) {
    const char* gfx_terrain_name_format = "MP%d_%02d_%d";
    const char* gfx_bldg_name_format = "MB%d_%02d_%d";
    const char* gfx_unit_name_format = "MU_%d%02d00";
+   const char* gfx_data_path_c = NULL;
    bstring gfx_tile_name = NULL;
    bstring gfx_data_path = NULL;
    FILE* gfx_data_file = NULL;
@@ -40,8 +41,9 @@ OG_RETVAL isomap_render_load_textures( const bstring data_path ) {
       goto cleanup;
    }
 
-   gfx_data_path = bformat( "%s\\graphic.pak", bdata( data_path ) );
+   gfx_data_path = bformat( "%s/Graphic.PAK", bdata( data_path ) );
    gfx_tile_name = bfromcstr( "" );
+   gfx_data_path_c = bdata( gfx_data_path );
 
    gfx_data_file = fopen( bdata( gfx_data_path ), "rb" );
    if( NULL == gfx_data_file ) {
@@ -54,9 +56,9 @@ OG_RETVAL isomap_render_load_textures( const bstring data_path ) {
       goto cleanup;
    }
 
-   memset( isomap_render_terrain_textures, '\0', 0xff * sizeof( SDL_Texture* ) );
-   memset( isomap_render_unit_textures, '\0', 0xff * sizeof( SDL_Texture* ) );
-   memset( isomap_render_ui_textures, '\0', 0xff * sizeof( SDL_Texture* ) );
+   memset( isomap_render_terrain_textures, '\0', 0xff * sizeof( OG_Texture* ) );
+   memset( isomap_render_unit_textures, '\0', 0xff * sizeof( OG_Texture* ) );
+   memset( isomap_render_ui_textures, '\0', 0xff * sizeof( OG_Texture* ) );
 
    /* Load terrain tiles. */
    for( i = 0 ; ISOMAP_BUILDINGS_TILES_OFFSET > i ; i++ ) {
@@ -103,16 +105,16 @@ void isomap_render_cleanup( void ) {
 
    for( i = 0 ; 0xff > i ; i++ ) {
       if( NULL != isomap_render_terrain_textures[i] ) {
-         SDL_DestroyTexture( isomap_render_terrain_textures[i] );
+         graphics_destroy_texture( isomap_render_terrain_textures[i] );
       }
       if( NULL != isomap_render_unit_textures[i] ) {
-         SDL_DestroyTexture( isomap_render_unit_textures[i] );
+         graphics_destroy_texture( isomap_render_unit_textures[i] );
       }
    }
 
-   memset( isomap_render_terrain_textures, '\0', 0xff * sizeof( SDL_Texture* ) );
-   memset( isomap_render_unit_textures, '\0', 0xff * sizeof( SDL_Texture* ) );
-   memset( isomap_render_ui_textures, '\0', 0xff * sizeof( SDL_Texture* ) );
+   memset( isomap_render_terrain_textures, '\0', 0xff * sizeof( OG_Texture* ) );
+   memset( isomap_render_unit_textures, '\0', 0xff * sizeof( OG_Texture* ) );
+   memset( isomap_render_ui_textures, '\0', 0xff * sizeof( OG_Texture* ) );
 
    isomap_render_textures_loaded = 0;
 }
@@ -251,18 +253,18 @@ static void isomap_render_select_unit(
 
    texture_selection->sprite_rect.x = GRAPHICS_TILE_WIDTH * animation_frame;
    texture_selection->sprite_rect.y = GRAPHICS_TILE_HEIGHT * (unit->facing + 1);
-   
-   texture_selection->texture_index = 
+
+   texture_selection->texture_index =
       (ISOMAP_RENDER_UNIT_TEXTURES_MAX * unit->team) + unit->type;
 }
 
 void isomap_render_draw_tile(
    const struct isomap_tile* tile,
-   const SDL_Rect* viewport, 
+   const OG_Rect* viewport,
    const GRAPHICS_ROTATE rotation
 ) {
    int i = 0, screen_x, screen_y, tile_x, tile_y;
-   SDL_Texture* sprite_texture = NULL;
+   OG_Texture* sprite_texture = NULL;
    struct isomap_render_texture texture_selection;
 #ifdef DEBUG
    SDL_Rect coords_src;
@@ -334,12 +336,12 @@ cleanup:
 void isomap_render_draw_unit(
    const struct units_unit* unit,
    const uint8_t ani_frame,
-   const SDL_Rect* viewport,
+   const OG_Rect* viewport,
    const GRAPHICS_ROTATE rotation
 ) {
    int i = 0, screen_x, screen_y;
    float tile_x, tile_y, increment;
-   SDL_Texture* sprite_texture = NULL;
+   OG_Texture* sprite_texture = NULL;
    struct isomap_render_texture texture_selection;
 
    tile_x = unit->tile->x;
@@ -369,9 +371,9 @@ void isomap_render_draw_unit(
    /* Perform transformations. */
    isomap_render_select_unit( unit, ani_frame, rotation, &texture_selection );
 
-   graphics_isometric_tile_rotate( 
-      &tile_x, &tile_y, 
-      unit->tile->map->width, 
+   graphics_isometric_tile_rotate(
+      &tile_x, &tile_y,
+      unit->tile->map->width,
       unit->tile->map->height,
       rotation
    );
@@ -415,7 +417,7 @@ void isomap_render_draw_cursor(
    int mouse_tile_x,
    int mouse_tile_y,
    const struct isomap* map,
-   const SDL_Rect* viewport,
+   const OG_Rect* viewport,
    const GRAPHICS_ROTATE rotation
 ) {
    int mouse_draw_x = 0, mouse_draw_y = 0;
@@ -456,9 +458,9 @@ cleanup:
    return;
 }
 
-void isomap_render_loop( 
-   const struct isomap* map, 
-   const SDL_Rect* viewport, 
+void isomap_render_loop(
+   const struct isomap* map,
+   const OG_Rect* viewport,
    GRAPHICS_ROTATE rotation,
    int mouse_tile_x,
    int mouse_tile_y
@@ -482,9 +484,9 @@ void isomap_render_loop(
       previous_y = viewport->y;
       previous_r = rotation;
    }
-   
+
    if( redraw_all ) {
-      graphics_draw_bg( isomap_render_ui_textures[ISOMAP_RENDER_UI_BGTILE] ); 
+      graphics_draw_bg( isomap_render_ui_textures[ISOMAP_RENDER_UI_BGTILE] );
    }
 
    for( i = map->tiles_count - 1 ; 0 <= i ; i-- ) {

@@ -146,7 +146,9 @@ OG_BOOL units_move( struct units_unit* unit, struct isomap_tile* tile_current, s
    }
 
    if( NULL == *tiles_previous ) {
+#ifdef USE_SDL
       SDL_LogCritical( SDL_LOG_CATEGORY_APPLICATION, "Unable to allocate memory for previous tiles list." );
+#endif /* USE_SDL */
       goto cleanup;
    }
 

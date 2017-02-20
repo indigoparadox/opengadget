@@ -18,7 +18,9 @@
 #ifndef TBSLOOP_H
 #define TBSLOOP_H
 
+#ifdef USE_SDL
 #include <SDL.h>
+#endif /* USE_SDL */
 
 #include "defines.h"
 #include "graphics.h"
@@ -44,7 +46,7 @@ struct tbsloop_config {
    TBSLOOP_STATE current_state;
    TBSLOOP_STATE previous_state;
    struct units_unit* moving_unit;
-   SDL_Rect viewport;
+   OG_Rect viewport;
 };
 
 OG_RETVAL tbsloop_loop( struct tbsloop_config* config );
