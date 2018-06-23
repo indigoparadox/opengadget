@@ -221,7 +221,9 @@ void graphics_end_draw( void ) {
 #ifdef USE_SDL
    SDL_RenderPresent( opengadget_renderer );
 #elif defined USE_ALLEGRO
-    blit( graphics_buffer, screen, 0, 0, 0, 0, GRAPHICS_SCREEN_WIDTH, GRAPHICS_SCREEN_HEIGHT );
+   acquire_bitmap( screen );
+   blit( graphics_buffer, screen, 0, 0, 0, 0, GRAPHICS_SCREEN_WIDTH, GRAPHICS_SCREEN_HEIGHT );
+   release_bitmap( screen );
 #endif /* USE_SDL */
 }
 
@@ -229,7 +231,7 @@ void graphics_sleep( const int milliseconds ) {
 #ifdef USE_SDL
    SDL_Delay( milliseconds );
 #elif defined USE_ALLEGRO
-   usleep( 1000 );
+   rest( milliseconds );
 #endif /* USE_SDL */
 }
 
@@ -270,7 +272,6 @@ OG_Texture* graphics_image_load( const bstring image_name, const struct pak_file
    SDL_RWops* image_rw = NULL;
    SDL_Surface* surface_formatted = NULL;
 #elif defined USE_ALLEGRO
-   PALETTE pal;
    OG_PAK_INFO pak_info;
    PACKFILE* pak_mem;
 #endif /* USE_SDL */
@@ -384,7 +385,9 @@ void graphics_draw( OG_Texture* texture, OG_Rect* src_rect, OG_Rect* dst_rect ) 
 #ifdef USE_SDL
    SDL_RenderCopy( opengadget_renderer, texture, src_rect, dst_rect );
 #elif defined USE_ALLEGRO
+   acquire_bitmap( graphics_buffer );
    masked_blit( texture, graphics_buffer, src_rect->x, src_rect->y, dst_rect->x,dst_rect->y, dst_rect->w, dst_rect->h );
+   release_bitmap( graphics_buffer );
 #endif /* USE_SDL */
 }
 
